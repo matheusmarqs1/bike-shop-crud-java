@@ -91,6 +91,9 @@ public class Customer implements Serializable {
 		if(order.getCustomer() != null && order.getCustomer() != this) {
 			throw new IllegalStateException("This order is already associated with another customer");
 		}
+		if(orders.contains(order)) {
+			throw new IllegalArgumentException("Order already exists in the list");
+		}
 		order.setCustomer(this);
 		orders.add(order);
 	}
@@ -123,8 +126,13 @@ public class Customer implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Customer [id=" + id + ", first_name=" + first_name + ", last_name=" + last_name + ", email=" + email
-				+ ", telephone=" + telephone + ", address=" + address + ", totalOrders=" + orders.size() + "]";
+		return "Customer [id=" + id + 
+				", first_name=" + first_name + 
+				", last_name=" + last_name + 
+				", email=" + email + 
+				", telephone=" + telephone + 
+				", address=" + address + 
+				", totalOrders=" + orders.size() + "]";
 	}
 
 	

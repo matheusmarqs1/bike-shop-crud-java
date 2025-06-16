@@ -3,6 +3,8 @@ package model.entities;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Order implements Serializable {
@@ -19,17 +21,18 @@ public class Order implements Serializable {
 	
 	private Customer customer;
 	
+	private List<OrderItem> orderItems = new ArrayList<>();
+	
 	public Order() {
 	}
 
-	public Order(Integer id, String orderNumber, Double totalAmount, String status, LocalDateTime datetime,
-			Customer customer) {
+	public Order(Integer id, String orderNumber, String status, LocalDateTime datetime, Customer customer) {
 		this.id = id;
 		this.orderNumber = orderNumber;
-		this.totalAmount = totalAmount;
 		this.status = status;
 		this.datetime = datetime;
 		this.customer = customer;
+		this.totalAmount = 0.0;
 	}
 
 	public Integer getId() {
@@ -50,10 +53,6 @@ public class Order implements Serializable {
 
 	public Double getTotalAmount() {
 		return totalAmount;
-	}
-
-	public void setTotalAmount(Double totalAmount) {
-		this.totalAmount = totalAmount;
 	}
 
 	public String getStatus() {
@@ -80,6 +79,49 @@ public class Order implements Serializable {
 		this.customer = customer;
 	}
 
+	public List<OrderItem> getOrderItems() {
+		return orderItems;
+	}
+	
+	
+	public void addOrderItem(OrderItem item) {
+		if(item == null) {
+			throw new  IllegalArgumentException("Order Item cannot be null");
+		}
+		if(orderItems.contains(item)) {
+			throw new  IllegalArgumentException("Order Item already exists in the list");
+		}
+		for(OrderItem existingItem : orderItems) {
+			if(existingItem.getProduct().equals(item.getProduct())) {
+				existingItem.setQuantity(existingItem.getQuantity() + item.getQuantity());
+				recalculateTotalAmount();
+				return;
+			}
+		}
+		item.setOrder(this);
+		orderItems.add(item);
+		recalculateTotalAmount();
+		
+	}
+	
+	public void removeOrderItem(OrderItem item) {
+		if(item == null) {
+			throw new  IllegalArgumentException("Order Item cannot be null");
+		}
+		if(orderItems.remove(item)) {
+			item.setOrder(null);
+		}
+	}
+	
+	public void recalculateTotalAmount() {
+		double sum = 0.0;
+		for(OrderItem item : orderItems) {
+			sum += item.getQuantity() * item.getUnit_price();
+		}
+		totalAmount = sum;
+	}
+	
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
@@ -99,10 +141,12 @@ public class Order implements Serializable {
 
 	@Override
 	public String toString() {
-		String customerID = (customer != null) ? ", customerID=" + customer.getId() : "";
-		
-		return "Order [id=" + id + ", orderNumber=" + orderNumber + ", totalAmount=" + totalAmount + ", status="
-					+ status + ", datetime=" + datetime.format(dtf) + customerID + "]";
+		return "Order [id=" + id + 
+				", orderNumber=" + orderNumber + 
+				", totalAmount=" + totalAmount + 
+				", status=" + status + 
+				", datetime=" + datetime.format(dtf) + 
+				", customerId=" + (customer != null ? customer.getId() : "null") + "]";
 	}
 
 }
