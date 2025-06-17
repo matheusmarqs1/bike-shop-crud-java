@@ -2,6 +2,8 @@ package application;
 
 import java.time.LocalDateTime;
 
+import model.dao.CustomerDao;
+import model.dao.DaoFactory;
 import model.entities.Customer;
 import model.entities.Order;
 import model.entities.OrderItem;
@@ -29,6 +31,8 @@ public class Program {
 	       System.out.println(item1);
 	       System.out.println(item2);
 	       System.out.println(order.getTotalAmount());
+	       
+	       CustomerDao customerDao = DaoFactory.createCustomerDao();
 	}
 
 }
