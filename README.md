@@ -75,8 +75,8 @@ Instructions on how to set up the database, configure the connection, and run th
 
 - [x] Database design (MySQL schema, ER diagram)
 - [x] SQL scripts for table creation
-- [ ] Initial project structure (Java packages and classes)
-- [ ] DAO interfaces created
+- [x] Initial project structure (Java packages and classes)
+- [x] DAO interfaces created
 - [ ] DAO implementations
 - [ ] CRUD methods for each entity
 - [ ] Main application for testing
