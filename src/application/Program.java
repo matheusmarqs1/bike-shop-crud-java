@@ -27,6 +27,11 @@ public class Program {
 	    	   System.out.println(obj);
 	       }
 	       
+	       System.out.println("\n==== TEST 3: customer insert ====");
+	       Customer newCustomer = new Customer(null, "Victor", "Alves", "victor@example.com", "62999900011", "303 Avenida Vera Cruz, Jardim Goiás, Goiânia, Goiás");
+	       customerDao.insert(newCustomer);
+	       System.out.println("Inserted! New id = " + newCustomer.getId());
+	       
 	}
 
 }
