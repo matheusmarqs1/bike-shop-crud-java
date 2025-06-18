@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import db.DB;
 import db.DbException;
@@ -114,8 +117,54 @@ public class CustomerDaoJDBC implements CustomerDao {
 
 	@Override
 	public List<Customer> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.prepareStatement(
+							"SELECT " +
+				    	    "customers.id AS CustomerId, " +
+				    	    "customers.first_name, " +
+				    	    "customers.last_name, " +
+				    	    "customers.email, " +
+				    	    "customers.telephone, " +
+				    	    "customers.address, " +
+				    	    "orders.id AS OrderId, " +
+				    	    "orders.customer_id, " +
+				    	    "orders.order_number, " +
+				    	    "orders.total_amount, " +
+				    	    "orders.status, " +
+				    	    "orders.datetime " +
+				    	    "FROM customers LEFT JOIN orders ON customers.id = orders.customer_id " +
+				    	    "ORDER BY customers.first_name");
+			
+			rs = st.executeQuery();
+			List<Customer> list = new ArrayList<>();
+			Map<Integer, Customer> map = new HashMap<>();
+			
+			while(rs.next()) {
+				Customer customer = map.get(rs.getInt("CustomerId"));
+				if(customer == null) {
+					customer = instantiateCustomer(rs);
+					map.put(rs.getInt("CustomerId"), customer);
+					list.add(customer);
+				}
+				if(rs.getObject("OrderId", Integer.class) != null) {
+					Order order = instantiateOrder(rs, customer);
+					customer.addOrder(order);
+				}
+				
+			}
+			return list;
+		}
+		catch(SQLException e) {
+			throw new DbException(e.getMessage());
+		}
+		finally {
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+			
+		}
+		
 	}
 
 }
