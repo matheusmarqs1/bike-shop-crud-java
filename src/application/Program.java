@@ -9,7 +9,7 @@ public class Program {
 	public static void main(String[] args) {
 
 	       CustomerDao customerDao = DaoFactory.createCustomerDao();
-	       Customer customer = customerDao.findById(4);
+	       Customer customer = customerDao.findById(11);
 	       
 	       System.out.println(customer);
 	}

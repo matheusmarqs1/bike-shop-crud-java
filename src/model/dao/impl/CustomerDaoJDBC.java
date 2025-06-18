@@ -57,7 +57,7 @@ public class CustomerDaoJDBC implements CustomerDao {
 				    	    "orders.total_amount, " +
 				    	    "orders.status, " +
 				    	    "orders.datetime " +
-				    	    "FROM customers JOIN orders ON customers.id = orders.customer_id " +
+				    	    "FROM customers LEFT JOIN orders ON customers.id = orders.customer_id " +
 				    	    "WHERE customers.id = ?");
 			
 			st.setInt(1, id);
@@ -71,8 +71,10 @@ public class CustomerDaoJDBC implements CustomerDao {
 					customer = instantiateCustomer(rs);
 				}
 				
-				Order order = instantiateOrder(rs, customer);
-				customer.addOrder(order);
+				if(rs.getObject("OrderId", Integer.class) != null) {
+					Order order = instantiateOrder(rs, customer);
+					customer.addOrder(order);
+				}
 				
 			}
 			return customer;
