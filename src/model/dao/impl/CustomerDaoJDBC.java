@@ -65,14 +65,49 @@ public class CustomerDaoJDBC implements CustomerDao {
 
 	@Override
 	public void update(Customer customer) {
-		// TODO Auto-generated method stub
+		PreparedStatement st = null;
+		try {
+			st = conn.prepareStatement("UPDATE customers "
+					+ "SET first_name = ?, last_name = ?, email = ?, telephone = ?, address = ? "
+					+ "WHERE id = ? ");
+			st.setString(1, customer.getFirst_name());
+			st.setString(2, customer.getLast_name());
+			st.setString(3, customer.getEmail());
+			st.setString(4, customer.getTelephone());
+			st.setString(5, customer.getAddress());
+			st.setInt(6, customer.getId());
+			
+			st.executeUpdate();
+		}
+		catch(SQLException e) {
+			throw new DbException(e.getMessage());
+		}
+		finally {
+			DB.closeStatement(st);
+		}
 		
 	}
 
 	@Override
 	public void deleteById(Integer id) {
-		// TODO Auto-generated method stub
-		
+		PreparedStatement st = null;
+		try {
+			st = conn.prepareStatement("DELETE FROM customers "
+					+ "WHERE id = ?");
+			
+			st.setInt(1, id);
+			
+			int rowsAffected = st.executeUpdate();
+			if(rowsAffected == 0) {
+				throw new DbException("Delete failed: no record found with the specified ID");
+			}
+		}
+		catch(SQLException e) {
+			throw new DbException(e.getMessage());
+		}
+		finally {
+			DB.closeStatement(st);
+		}
 	}
 
 	@Override
