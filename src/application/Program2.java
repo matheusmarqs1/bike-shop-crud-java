@@ -1,5 +1,8 @@
 package application;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import model.dao.DaoFactory;
 import model.dao.ProductDao;
 import model.entities.Product;
@@ -14,6 +17,15 @@ public class Program2 {
 		
 		Product product = productDao.findById(2);
 		System.out.println(product);
+		
+		System.out.println("\n==== TEST 2: product findAll ====");
+		
+		List<Product> list = new ArrayList<>();
+		list = productDao.findAll();
+		for(Product p : list) {
+			System.out.println(p);
+		}
+		
 
 	}
 
