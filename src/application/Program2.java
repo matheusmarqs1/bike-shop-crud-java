@@ -25,13 +25,20 @@ public class Program2 {
 		for(Product p : list) {
 			System.out.println(p);
 		}
-		
+		/*
 		System.out.println("\n==== TEST 3: product insert ====");
 		
 		Product newProduct = new Product(null, "Bike Repair Kit", "Compact repair kit including tire levers, patch kit, multi-tool, and mini pump", "accessories", 34.99, 55);
 		productDao.insert(newProduct);
 		System.out.println("Inserted! New id = " + newProduct.getId());
+		*/
 		
+		System.out.println("\n==== TEST 4: product update ====");
+		product = productDao.findById(10);
+		product.setDescription("Comfortable gloves with gel padding to reduce fatigue and enhance grip during rides");
+		product.setPrice(75.00);
+		productDao.update(product);
+		System.out.println("Update completed! ");
 	}
 
 }
