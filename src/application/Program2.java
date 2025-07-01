@@ -26,7 +26,12 @@ public class Program2 {
 			System.out.println(p);
 		}
 		
-
+		System.out.println("\n==== TEST 3: product insert ====");
+		
+		Product newProduct = new Product(null, "Bike Repair Kit", "Compact repair kit including tire levers, patch kit, multi-tool, and mini pump", "accessories", 34.99, 55);
+		productDao.insert(newProduct);
+		System.out.println("Inserted! New id = " + newProduct.getId());
+		
 	}
 
 }
