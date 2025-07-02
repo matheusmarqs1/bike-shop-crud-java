@@ -54,6 +54,10 @@ public class Order implements Serializable {
 	public Double getTotalAmount() {
 		return totalAmount;
 	}
+	
+	public void setTotalAmount(Double totalAmount) {
+		this.totalAmount = totalAmount;
+	}
 
 	public String getStatus() {
 		return status;

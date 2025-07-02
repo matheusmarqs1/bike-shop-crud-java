@@ -59,7 +59,11 @@ public class OrderItem implements Serializable {
 	public Double getUnit_price() {
 		return unit_price;
 	}
-
+	
+	public void setUnit_price(Double unit_price) {
+		this.unit_price = unit_price;
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
