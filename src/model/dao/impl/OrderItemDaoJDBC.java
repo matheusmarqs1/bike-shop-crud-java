@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +25,35 @@ public class OrderItemDaoJDBC implements OrderItemDao {
 
 	@Override
 	public void insert(OrderItem orderItem) {
-		// TODO Auto-generated method stub
+		PreparedStatement st = null;
+		try {
+			st = conn.prepareStatement("INSERT INTO order_items (product_id, order_id, quantity, unit_price) "
+					+ "VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			
+			st.setInt(1, orderItem.getProduct().getId() );
+			st.setInt(2, orderItem.getOrder().getId());
+			st.setInt(3, orderItem.getQuantity());
+			st.setDouble(4, orderItem.getUnit_price());
+			
+			int rowsAffected = st.executeUpdate();
+			if(rowsAffected > 0) {
+				ResultSet rs = st.getGeneratedKeys();
+				if(rs.next()) {
+					int id = rs.getInt(1);
+					orderItem.setId(id);
+				}
+				DB.closeResultSet(rs);
+			}
+			else {
+				throw new DbException("Unexpected error! No rows affected!");
+			}
+		}
+		catch(SQLException e) {
+			throw new DbException(e.getMessage());
+		}
+		finally {
+			DB.closeStatement(st);
+		}
 		
 	}
 

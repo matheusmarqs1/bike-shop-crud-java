@@ -2,6 +2,7 @@ package model.dao;
 
 import db.DB;
 import model.dao.impl.CustomerDaoJDBC;
+import model.dao.impl.OrderDaoJDBC;
 import model.dao.impl.OrderItemDaoJDBC;
 import model.dao.impl.ProductDaoJDBC;
 
@@ -17,6 +18,10 @@ public class DaoFactory {
 	
 	public static OrderItemDao createOrderItemDao() {
 		return new OrderItemDaoJDBC(DB.getConnection());
+	}
+	
+	public static OrderDao createOrderDao() {
+		return new OrderDaoJDBC(DB.getConnection());
 	}
 	
 }
