@@ -17,9 +17,15 @@ public class Program4 {
 		Order order = orderDao.findById(10);
 		System.out.println(order);
 		
-		System.out.println("==== TEST 2: order findAll ====");
+		System.out.println("\n==== TEST 2: order findAll ====");
 		List<Order> list = new ArrayList<>();
 		list = orderDao.findAll();
+		for(Order obj : list) {
+			System.out.println(obj);
+		}
+		
+		System.out.println("\n==== TEST 3: order findByCustomerId ====");
+		list = orderDao.findByCustomerId(5);
 		for(Order obj : list) {
 			System.out.println(obj);
 		}
