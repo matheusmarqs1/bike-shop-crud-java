@@ -40,7 +40,12 @@ public class Program4 {
 		orderDao.insert(newOrder);
 		System.out.println("Inserted! New id = " + newOrder.getId());
 		
-
+		
+		System.out.println("\n==== TEST 5: order update ====");
+		order.setStatus("paid");
+		orderDao.update(order);
+		System.out.println("Update completed!");
+	
 	}
 
 }

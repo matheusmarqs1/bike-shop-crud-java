@@ -62,7 +62,27 @@ public class OrderDaoJDBC implements OrderDao {
 
 	@Override
 	public void update(Order order) {
-		// TODO Auto-generated method stub
+		PreparedStatement st = null;
+		try {
+			st = conn.prepareStatement("UPDATE orders SET customer_id = ?, order_number = ?, total_amount = ?, status = ?, datetime = ? "
+					+ "WHERE id = ?");
+			
+			st.setInt(1, order.getCustomer().getId());
+			st.setString(2, order.getOrderNumber());
+			st.setDouble(3, order.getTotalAmount());
+			st.setString(4, order.getStatus());
+			st.setTimestamp(5, Timestamp.valueOf(order.getDatetime()));
+			st.setInt(6, order.getId());
+			
+			st.executeUpdate();
+			
+		}
+		catch(SQLException e) {
+			throw new DbException(e.getMessage());
+		}
+		finally {
+			DB.closeStatement(st);
+		}
 		
 	}
 
