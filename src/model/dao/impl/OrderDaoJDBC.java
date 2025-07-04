@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import db.DB;
 import db.DbException;
@@ -64,6 +67,7 @@ public class OrderDaoJDBC implements OrderDao {
 			if(rs.next()) {
 				Customer customer = instantiateCustomer(rs);
 				Order order = instantiateOrder(rs, customer);
+				customer.addOrder(order);
 				return order;
 			}
 			return null;		
@@ -101,8 +105,48 @@ public class OrderDaoJDBC implements OrderDao {
 
 	@Override
 	public List<Order> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.prepareStatement("SELECT orders.id AS OrderId, "
+					+ "orders.customer_id, "
+					+ "orders.order_number, "
+					+ "orders.total_amount, "
+					+ "orders.status, "
+					+ "orders.datetime, "
+					+ "customers.id AS CustomerId, "
+					+ "customers.first_name, "
+					+ "customers.last_name, "
+					+ "customers.email, "
+					+ "customers.telephone, "
+					+ "customers.address "
+					+ "FROM orders JOIN customers ON orders.customer_id = customers.id ");
+			
+			rs = st.executeQuery();
+			
+			Map<Integer, Customer> map = new HashMap<>();
+			List<Order> list = new ArrayList<>();
+			
+			while(rs.next()) {
+				Customer customer = map.get(rs.getInt("CustomerId"));
+				if(customer == null) {
+					customer = instantiateCustomer(rs);
+					map.put(rs.getInt("CustomerId"), customer);
+				}
+				Order order = instantiateOrder(rs, customer);
+				customer.addOrder(order);
+				list.add(order);
+			}
+			return list;
+			
+		}
+		catch(SQLException e) {
+			throw new DbException(e.getMessage());
+		}
+		finally {
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+		}
 	}
 
 	@Override

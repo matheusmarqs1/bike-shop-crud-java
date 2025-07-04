@@ -1,5 +1,8 @@
 package application;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import model.dao.DaoFactory;
 import model.dao.OrderDao;
 import model.entities.Order;
@@ -13,6 +16,14 @@ public class Program4 {
 		System.out.println("==== TEST 1: order findById ====");
 		Order order = orderDao.findById(10);
 		System.out.println(order);
+		
+		System.out.println("==== TEST 2: order findAll ====");
+		List<Order> list = new ArrayList<>();
+		list = orderDao.findAll();
+		for(Order obj : list) {
+			System.out.println(obj);
+		}
+		
 
 	}
 
