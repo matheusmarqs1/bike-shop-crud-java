@@ -87,12 +87,6 @@ public class OrderDaoJDBC implements OrderDao {
 	}
 
 	@Override
-	public void deleteById(Integer id) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public Order findById(Integer id) {
 		PreparedStatement st = null;
 		ResultSet rs = null;
