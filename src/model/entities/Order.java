@@ -26,11 +26,11 @@ public class Order implements Serializable {
 	public Order() {
 	}
 
-	public Order(Integer id, String orderNumber, String status, LocalDateTime datetime, Customer customer) {
+	public Order(Integer id, String orderNumber, Customer customer) {
 		this.id = id;
 		this.orderNumber = orderNumber;
-		this.status = status;
-		this.datetime = datetime;
+		this.status = "pending";
+		this.datetime = LocalDateTime.now();
 		this.customer = customer;
 		this.totalAmount = 0.0;
 	}
