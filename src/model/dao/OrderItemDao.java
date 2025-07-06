@@ -10,5 +10,6 @@ public interface OrderItemDao {
 	void update(OrderItem orderItem);
 	void deleteById(Integer id);
 	List<OrderItem> findByOrderId(Integer id);
+	OrderItem findById(Integer id);
 
 }

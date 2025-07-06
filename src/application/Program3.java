@@ -26,17 +26,32 @@ public class Program3 {
 			System.out.println(item);
 		}
 		
-		System.out.println("==== TEST 2: orderItem insert ====");
+		System.out.println("\n==== TEST 2: orderItem insert ====");
 		ProductDao productDao = DaoFactory.createProductDao();
 		Product p = productDao.findById(1);
 		
 		OrderDao orderDao = DaoFactory.createOrderDao();
 		Order o = orderDao.findById(10);
 		
-		OrderItem oi = new OrderItem(null, p, o, 1);
-		orderItemDao.insert(oi);
-		System.out.println("Inserted! New id = " + oi.getId());
+		OrderItem newItem = new OrderItem(null, p, o, 1);
 		
+		orderItemDao.insert(newItem);
+		System.out.println("Inserted! New id = " + newItem.getId());
+		
+		
+		System.out.println("\n==== TEST 3: orderItem findById ====");
+		OrderItem oi = orderItemDao.findById(2);
+		System.out.println(oi);
+		
+		System.out.println("\n==== TEST 4: orderItem update ====");
+		p = productDao.findById(7);
+		
+		oi.setQuantity(2);
+		oi.setProduct(p);
+		orderItemDao.update(oi);
+		System.out.println("Update completed!");
+		
+	
 	}
 
 }
