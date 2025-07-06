@@ -2,6 +2,7 @@ package application;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import model.dao.DaoFactory;
 import model.dao.OrderDao;
@@ -15,6 +16,7 @@ public class Program3 {
 
 	public static void main(String[] args) {
 		
+		Scanner sc = new Scanner(System.in);
 		
 		OrderItemDao orderItemDao = DaoFactory.createOrderItemDao();
 		
@@ -51,6 +53,13 @@ public class Program3 {
 		orderItemDao.update(oi);
 		System.out.println("Update completed!");
 		
+		System.out.println("\n==== TEST 5: orderItem deleteById ====");
+		System.out.println("Enter id for delete: ");
+		int id = sc.nextInt();
+		orderItemDao.deleteById(id);
+		System.out.println("Delete completed!");
+		
+		sc.close();
 	
 	}
 
