@@ -151,7 +151,7 @@ public class OrderItemDaoJDBC implements OrderItemDao {
 				Customer customer = customerMap.get(rs.getInt("CustomerId"));
 				if(customer == null) {
 					customer = instantiateCustomer(rs);
-					customerMap.put(rs.getInt("customerId"), customer);
+					customerMap.put(rs.getInt("CustomerId"), customer);
 				}
 				
 				Order order = orderMap.get(rs.getInt("OrderId"));
