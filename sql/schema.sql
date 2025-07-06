@@ -41,7 +41,8 @@ CREATE TABLE `order_items` (
     `unit_price` DECIMAL(7,2) UNSIGNED NOT NULL DEFAULT 0.0,
     PRIMARY KEY(`id`),
     FOREIGN KEY(`product_id`) REFERENCES `products`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY(`order_id`) REFERENCES `orders`(`id`) ON DELETE CASCADE
+    FOREIGN KEY(`order_id`) REFERENCES `orders`(`id`) ON DELETE CASCADE,
+    UNIQUE(`order_id`, `product_id`)
 );
 
 -- VIEWS
