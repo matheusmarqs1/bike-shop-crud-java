@@ -30,12 +30,12 @@ public class Program3 {
 		
 		System.out.println("\n==== TEST 2: orderItem insert ====");
 		ProductDao productDao = DaoFactory.createProductDao();
-		Product p = productDao.findById(1);
+		Product p = productDao.findById(2);
 		
 		OrderDao orderDao = DaoFactory.createOrderDao();
-		Order o = orderDao.findById(10);
+		Order o = orderDao.findById(12);
 		
-		OrderItem newItem = new OrderItem(null, p, o, 1);
+		OrderItem newItem = new OrderItem(null, p, o, 2);
 		
 		orderItemDao.insert(newItem);
 		System.out.println("Inserted! New id = " + newItem.getId());

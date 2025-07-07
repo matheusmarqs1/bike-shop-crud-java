@@ -97,7 +97,7 @@ CREATE VIEW `sales_by_date` AS
 SELECT DATE(`datetime`) AS "order_date", COUNT(*) AS "total_orders", SUM(`total_amount`) AS "total_revenue"
 FROM `orders`
 WHERE `status` NOT IN ('pending', 'canceled')
-GROUP BY `datetime`
+GROUP BY DATE(`datetime`)
 ORDER BY `order_date` DESC;
 
 
@@ -203,12 +203,12 @@ BEGIN
 END;
 
 -- Triggered whenever an item isn the order is inserted, calculating the unit price based on the price column in the product table
-CREATE TRIGGER `set_unit_price_after_insert`
-AFTER INSERT ON `order_items`
+CREATE TRIGGER `set_unit_price_before_insert`
+BEFORE INSERT ON `order_items`
 FOR EACH ROW
 BEGIN
     DECLARE product_price DECIMAL(7,2);
-    SELECT `price` INTO product_price FROM `products` WHERE `id` = NEW.`product_id`
+    SELECT `price` INTO product_price FROM `products` WHERE `id` = NEW.`product_id`;
     SET NEW.`unit_price` = product_price;   
 END;
 
@@ -219,8 +219,8 @@ FOR EACH ROW
 BEGIN
     DECLARE product_price DECIMAL(7,2);
     
-    IF NEW.`product_price` != OLD.`product_price` THEN
-        SELECT `price` INTO product_price FROM `products`WHERE `id` = NEW.`product_id`
+    IF NEW.`product_id` != OLD.`product_id` THEN
+        SELECT `price` INTO product_price FROM `products`WHERE `id` = NEW.`product_id`;
         SET NEW.`unit_price` = product_price;
     END IF;
 END;

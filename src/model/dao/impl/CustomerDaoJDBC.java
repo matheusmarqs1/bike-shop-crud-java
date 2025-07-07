@@ -166,6 +166,7 @@ public class CustomerDaoJDBC implements CustomerDao {
 		Order order = new Order();
 		order.setId(rs.getInt("OrderId"));
 		order.setOrderNumber(rs.getString("order_number"));
+		order.setTotalAmount(rs.getDouble("total_amount"));
 		order.setStatus(rs.getString("status"));
 		order.setDatetime(rs.getTimestamp("datetime").toLocalDateTime());
 		order.setCustomer(customer);
