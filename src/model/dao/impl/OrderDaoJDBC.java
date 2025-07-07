@@ -112,7 +112,6 @@ public class OrderDaoJDBC implements OrderDao {
 			if(rs.next()) {
 				Customer customer = instantiateCustomer(rs);
 				Order order = instantiateOrder(rs, customer);
-				customer.addOrder(order);
 				return order;
 			}
 			return null;		
@@ -179,7 +178,6 @@ public class OrderDaoJDBC implements OrderDao {
 					map.put(rs.getInt("CustomerId"), customer);
 				}
 				Order order = instantiateOrder(rs, customer);
-				customer.addOrder(order);
 				list.add(order);
 			}
 			return list;
@@ -227,7 +225,6 @@ public class OrderDaoJDBC implements OrderDao {
 					map.put(rs.getInt("CustomerId"), customer);
 				}
 				Order order = instantiateOrder(rs, customer);
-				customer.addOrder(order);
 				list.add(order);
 			}
 			return list;

@@ -29,12 +29,13 @@ public class Program {
 	    	   System.out.println(obj);
 	       }
 	       
-	       
+	       /*
 	       System.out.println("\n==== TEST 3: customer insert ====");
 	       Customer newCustomer = new Customer(null, "Matheus", "Teles", "matheus@example.com", "62999900012", "303 Avenida Vera Cruz, Jardim Goiás, Goiânia, Goiás");
 	       customerDao.insert(newCustomer);
 	       System.out.println("Inserted! New id = " + newCustomer.getId());
 	       
+	      
 	       System.out.println("\n==== TEST 4: customer update ====");
 	       customer = customerDao.findById(1);
 	       customer.setFirst_name("Pedro");
@@ -49,7 +50,7 @@ public class Program {
 	       int id = sc.nextInt();
 	       customerDao.deleteById(id);
 	       System.out.println("Delete completed!");
-
+*/
 	       sc.close();
 	}
 

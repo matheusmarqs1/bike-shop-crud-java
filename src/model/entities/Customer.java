@@ -79,7 +79,6 @@ public class Customer implements Serializable {
 		this.address = address;
 	}
 	
-	
 	public List<Order> getOrders() {
 		return orders;
 	}
@@ -131,8 +130,7 @@ public class Customer implements Serializable {
 				", last_name=" + last_name + 
 				", email=" + email + 
 				", telephone=" + telephone + 
-				", address=" + address + 
-				", totalOrders=" + orders.size() + "]";
+				", address=" + address + "]";
 	}
 
 	
