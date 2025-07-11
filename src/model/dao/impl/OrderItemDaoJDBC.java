@@ -88,6 +88,7 @@ public class OrderItemDaoJDBC implements OrderItemDao {
 	public void deleteById(Integer id) {
 		PreparedStatement st = null;
 		try {
+			
 			st = conn.prepareStatement("DELETE FROM order_items WHERE id = ?");
 			st.setInt(1, id);
 			

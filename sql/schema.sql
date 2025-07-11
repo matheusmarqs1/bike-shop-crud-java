@@ -134,11 +134,11 @@ CREATE TRIGGER `update_total_amount_after_delete`
 AFTER DELETE ON `order_items`
 FOR EACH ROW
 BEGIN
-    UPDATE `orders` SET `total_amount` = (
-         SELECT SUM(`quantity` * `unit_price`)
-         FROM `order_items`
-         WHERE `order_id` = OLD.`order_id`
-    )
+    UPDATE `orders` SET `total_amount` = IFNULL((
+        SELECT SUM(`quantity` * `unit_price`)
+        FROM `order_items`
+        WHERE `order_id` = OLD.`order_id`
+    ), 0.0)
     WHERE `id` = OLD.`order_id`;
 END;
 

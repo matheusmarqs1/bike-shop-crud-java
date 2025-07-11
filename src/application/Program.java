@@ -1,5 +1,6 @@
 package application;
 
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
@@ -7,9 +8,11 @@ import java.util.Scanner;
 import model.dao.CustomerDao;
 import model.dao.DaoFactory;
 import model.dao.OrderDao;
+import model.dao.OrderItemDao;
 import model.dao.ProductDao;
 import model.entities.Customer;
 import model.entities.Order;
+import model.entities.OrderItem;
 import model.entities.Product;
 
 public class Program {
@@ -19,7 +22,6 @@ public class Program {
 	public static void main(String[] args) {
 		
 		Locale.setDefault(Locale.US);
-		
 		int choice;
 		do {
 			System.out.println("\"===== MAIN MENU =====\"");
@@ -64,11 +66,11 @@ public class Program {
 		
 		do {
 			System.out.println("\"===== CUSTOMER MENU =====\"");
-			System.out.println("1. List customers");
-			System.out.println("2. Search customer by id");
-			System.out.println("3. Register new customer");
-			System.out.println("4. Update customer data");
-			System.out.println("5. Delete customer by id");
+			System.out.println("1. List all customers");
+			System.out.println("2. View customer details");
+			System.out.println("3. Add new customer");
+			System.out.println("4. Update customer");
+			System.out.println("5. Delete customer");
 			System.out.println("6. Return to main menu");
 			
 			System.out.print("Choose an option: ");
@@ -90,7 +92,7 @@ public class Program {
 					break;
 					
 				case 2:
-					System.out.println("=== SEARCH CUSTOMER BY ID ===");
+					System.out.println("=== VIEW CUSTOMER DETAILS ===");
 					System.out.print("Enter an id for the search: ");
 					int id = sc.nextInt();
 					sc.nextLine();
@@ -104,7 +106,7 @@ public class Program {
 					break;
 				
 				case 3:
-					System.out.println("=== NEW CUSTOMER REGISTRATION ===");
+					System.out.println("=== ADD NEW CUSTOMER ===");
 					System.out.println("Enter first name: ");
 					String firstName = sc.nextLine();
 					System.out.println("Enter last name: ");
@@ -180,7 +182,7 @@ public class Program {
 					break;
 					
 				case 5:
-					System.out.println("=== DELETE CUSTOMER BY ID ===");
+					System.out.println("=== DELETE CUSTOMER ===");
 					System.out.println("Enter the id of the customer to delete: ");
 					int deleteId = sc.nextInt();
 					sc.nextLine();
@@ -228,11 +230,11 @@ public class Program {
 		do {
 			
 			System.out.println("\"===== PRODUCT MENU =====\"");
-			System.out.println("1. List products");
-			System.out.println("2. Search product by id");
-			System.out.println("3. Register new product");
+			System.out.println("1. List all products");
+			System.out.println("2. View product details");
+			System.out.println("3. Add new product");
 			System.out.println("4. Update product");
-			System.out.println("5. Delete product by id");
+			System.out.println("5. Delete product");
 			System.out.println("6. Return to main menu");
 			
 			System.out.print("Choose an option: ");
@@ -255,7 +257,7 @@ public class Program {
 					break;
 				
 				case 2:
-					System.out.println("=== SEARCH PRODUCT BY ID ===");
+					System.out.println("=== VIEW PRODUCT DETAILS ===");
 					System.out.println("Enter an id for the search: ");
 					int id = sc.nextInt();
 					sc.nextLine();
@@ -270,7 +272,7 @@ public class Program {
 					break;
 				
 				case 3:
-					System.out.println("=== NEW PRODUCT REGISTRATION ===");
+					System.out.println("=== ADD NEW PRODUCT ===");
 					
 					System.out.println("Enter name: ");
 					String name = sc.nextLine();
@@ -399,7 +401,7 @@ public class Program {
 					break;
 					
 				case 5:
-					System.out.println("=== DELETE PRODUCT BY ID ===");
+					System.out.println("=== DELETE PRODUCT ===");
 					System.out.println("Enter the id of the product to delete: ");
 					int deleteId = sc.nextInt();
 					sc.nextLine();
@@ -444,11 +446,11 @@ public class Program {
 		
 			do {
 				System.out.println("\"===== ORDER MENU =====\"");
-				System.out.println("1. List orders");
-				System.out.println("2. Search order by id");
-				System.out.println("3. Search orders by customer id");
-				System.out.println("4. Register new order");
-				System.out.println("5. Update order");
+				System.out.println("1. List all orders");
+				System.out.println("2. View order details");
+				System.out.println("3. List customer's order");
+				System.out.println("4. Create new order");
+				System.out.println("5. Update order status");
 				System.out.println("6. Cancel order");
 				System.out.println("7. Manage Order Items");
 				System.out.println("8. Return to main menu");
@@ -460,7 +462,7 @@ public class Program {
 				switch(choice) {
 					
 					case 1:
-						System.out.println("=== ORDER LIST ===");
+						System.out.println("=== LIST ORDERS ===");
 						List<Order> list = orderDao.findAll();
 						if(list.isEmpty()) {
 							System.out.println("No orders registered!");
@@ -473,7 +475,7 @@ public class Program {
 						break;
 						
 					case 2:
-						System.out.println("=== SEARCH ORDER BY ID ===");
+						System.out.println("=== VIEW ORDER DETAILS ===");
 						
 						System.out.println("Enter an id for the search: ");
 						int id = sc.nextInt();
@@ -490,7 +492,7 @@ public class Program {
 						break;
 						
 					case 3:
-						System.out.println("=== SEARCH ORDERS BY CUSTOMER ID ===");
+						System.out.println("=== LIST CUSTOMER'S ORDER ===");
 						
 						System.out.println("Enter a customer id for the search: ");
 						int customerId = sc.nextInt();
@@ -510,7 +512,7 @@ public class Program {
 						break;
 						
 					case 4:
-						System.out.println("=== NEW ORDER REGISTRATION ===");
+						System.out.println("=== CREATE NEW ORDER ===");
 						
 						System.out.println("Enter order number(eg., ORD-2025-***): ");
 						String orderNumber = sc.nextLine();
@@ -533,7 +535,7 @@ public class Program {
 						break;
 						
 					case 5:
-						System.out.println("=== UPDATE ORDER ===");
+						System.out.println("=== UPDATE ORDER STATUS ===");
 						
 						System.out.println("Enter the id of the order to update: ");
 						int updateOrderId = sc.nextInt();
@@ -626,7 +628,380 @@ public class Program {
 
 
 	public static void menuOrderItems() {
-		// TODO Auto-generated method stub
+		
+		OrderItemDao orderItemDao = DaoFactory.createOrderItemDao();
+		OrderDao orderDao = DaoFactory.createOrderDao();
+		ProductDao productDao = DaoFactory.createProductDao();
+		int choice;
+		List<Order> orderList = orderDao.findAll();
+		
+		do {
+			System.out.println("\"===== ORDER ITEMS MENU =====\"");
+			
+			System.out.println("1. List items in an order");
+			System.out.println("2. Add item to an order");
+			System.out.println("3. Update item in an order");
+			System.out.println("4. Delete item in an order");
+			System.out.println("5. Return to order menu");
+			
+			System.out.print("Choose an option: ");
+			choice = sc.nextInt();
+			sc.nextLine();
+			
+			switch(choice) {
+				
+				case 1:
+					System.out.println("=== LIST ITEMS IN AN ORDER ===");
+					System.out.println("Enter an order id: ");
+					int orderId = sc.nextInt();
+					sc.nextLine();
+					Order order = orderDao.findById(orderId);
+					
+					if(order == null) {
+						System.out.println("No order found with that id! ");
+					}
+					else {
+						List<OrderItem> list = orderItemDao.findByOrderId(order.getId());
+						
+						if(list.isEmpty()) {
+							System.out.println("This order does not contain items");
+						}
+						else {
+							for(OrderItem item : list) {
+								System.out.println(item);
+							}
+						}
+					}
+					break;
+					
+				case 2:
+					System.out.println("=== ADD ITEM TO AN ORDER ===");
+					
+					System.out.println("=== LIST PRODUCTS ===");
+					List<Product> productList = productDao.findAll();
+					
+					for(Product p : productList) {
+						System.out.println(p);
+					}
+						
+					System.out.println("Enter an existing product id: ");
+					int addProductId = sc.nextInt();
+					sc.nextLine();
+						
+					Product addProduct = productDao.findById(addProductId);
+						
+					if(addProduct == null) {
+						System.out.println("No product found with that id!");
+					}
+					else {
+						System.out.println("=== LIST ORDERS ===");
+						
+						for(Order o : orderList) {
+							System.out.println(o);
+						}
+						
+						System.out.println("Enter an existing order id:");
+						int addOrderId = sc.nextInt();
+						sc.nextLine();
+							
+						Order addOrder = orderDao.findById(addOrderId);
+						
+						if(addOrder == null) {
+							System.out.println("No order found with that id!");
+						}
+						else {
+							System.out.println("Enter quantity: ");
+							
+							if(!sc.hasNextInt()) {
+								System.out.println("Please enter a valid number (whole numbers only)");
+							}
+							else {
+								int quantity = sc.nextInt();
+								sc.nextLine();
+								
+								if(quantity <= 0) {
+									System.out.println("Quantity must be greater than zero!");
+								}
+								else {
+									OrderItem orderItem = new OrderItem(null, addProduct, addOrder, quantity);
+									orderItemDao.insert(orderItem);
+									System.out.println("Inserted! New id = " + orderItem.getId());
+								}
+							}
+						}
+							
+					}
+					break;
+					
+				case 3:
+					System.out.println("=== UPDATE ITEM IN AN ORDER ===");
+					
+					System.out.println("=== LIST ORDERS ===");
+					
+					for(Order o : orderList) {
+						System.out.println(o);
+					}
+					
+					Order updateOrder = null;
+					int updateOrderId;
+					boolean validOrder = false;
+					do {
+						try {
+							System.out.println("Enter an existing order id:");
+							updateOrderId = sc.nextInt();
+							sc.nextLine();
+							
+							if(updateOrderId <= 0) {
+								System.out.println("Id can only be positive! ");
+							}
+							else {
+								updateOrder = orderDao.findById(updateOrderId);
+								if(updateOrder == null) {
+									System.out.println("No order found with that id!");
+								}
+								else if(!updateOrder.getStatus().equals("pending")) {
+									System.out.println("It is not possible to update this order, it is not pending");
+									
+								}
+								else {
+									validOrder = true;
+								}
+							}
+						}
+						catch(InputMismatchException e) {
+							System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
+							sc.nextLine();
+						}
+						
+					}while(!validOrder);
+					
+					
+					
+					List<OrderItem> list = orderItemDao.findByOrderId(updateOrder.getId());
+						
+					if(list.isEmpty()) {
+						System.out.println("This order does not contain items");
+					}
+						
+					else {
+							
+						System.out.println("ITEMS FROM " + updateOrder.getOrderNumber());
+						for(OrderItem item : list) {
+							System.out.println(item);
+						}
+						
+						OrderItem updateItem = null;
+						int updateItemId;
+						boolean validItem = false;
+						do {
+							try {
+								System.out.println("Enter item ID to update: ");
+								updateItemId = sc.nextInt();
+								sc.nextLine();
+									
+								if(updateItemId <= 0) {
+									System.out.println("Id can only be positive");
+								}
+								else {
+									updateItem = orderItemDao.findById(updateItemId);
+									if(updateItem == null) {
+										System.out.println("There is no item with that id");
+									}
+									else if(!list.contains(updateItem)) {
+										System.out.println("This item is not in the order");
+									}
+									else {
+										validItem = true;
+									}
+								}
+							}
+							catch(InputMismatchException e) {
+								System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
+								sc.nextLine();
+							}
+								
+						}while(!validItem);
+
+							
+							
+						System.out.println("=== LIST PRODUCTS ===");
+						List<Product> updateProductList = productDao.findAll();
+						for(Product p : updateProductList) {
+								System.out.println(p);
+							}
+								
+							int updateProductId;
+							Product updateProduct = new Product();
+							do {
+								
+								System.out.println("Enter new product id (" + updateItem.getProduct().getId() + "): ");
+								String inputProductId = sc.nextLine();
+								
+								if(inputProductId.trim().isEmpty()) {
+									updateProductId = updateItem.getProduct().getId();
+									updateProduct = productDao.findById(updateProductId);
+									break;
+								}
+								else {
+									try {
+										updateProductId = Integer.parseInt(inputProductId);
+										if(updateProductId <= 0) {
+											System.out.println("Id can only be positive");
+										}
+										else {
+											updateProduct = productDao.findById(updateProductId);
+											break;
+										}
+									}
+									catch(NumberFormatException e) {
+										System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
+									}
+								}
+							} while(true);
+							
+							int updateQuantity;
+							do {
+								
+								System.out.println("Enter new quantity (" + updateItem.getQuantity() + "): ");
+								String inputQuantity = sc.nextLine();
+								
+								if(inputQuantity.trim().isEmpty()) {
+									updateQuantity = updateItem.getQuantity();
+									break;
+								}
+								else {
+									try {
+										updateQuantity = Integer.parseInt(inputQuantity);
+										if(updateQuantity <= 0) {
+											System.out.println("Quantity can only be positive");
+										}
+										else {
+											break;
+										}
+									}
+									catch(NumberFormatException e) {
+										System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
+									}
+								}
+							} while(true);
+							
+							updateItem.setProduct(updateProduct);
+							updateItem.setQuantity(updateQuantity);
+							orderItemDao.update(updateItem);
+							System.out.println("Item updated successfully!");
+						
+					}
+					break;
+				
+				
+				case 4:
+					
+					System.out.println("=== DELETE ITEM IN AN ORDER ===");
+					
+					System.out.println("=== LIST ORDERS ===");
+
+					for(Order o : orderList) {
+						System.out.println(o);
+					}
+					
+					Order deleteOrder = null;
+					int deleteOrderId;
+					
+					do {
+						try {
+							System.out.println("Enter an existing order id:");
+							deleteOrderId = sc.nextInt();
+							sc.nextLine();
+							
+							if(deleteOrderId <= 0) {
+								System.out.println("Id can only be positive! ");
+							}
+							else {
+								deleteOrder = orderDao.findById(deleteOrderId);
+								if(deleteOrder == null) {
+									System.out.println("No order found with that id!");
+								}
+							}
+						}
+						catch(InputMismatchException e) {
+							System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
+							sc.nextLine();
+						}
+						
+					}while(deleteOrder == null);
+					
+					List<OrderItem> itemsList = orderItemDao.findByOrderId(deleteOrder.getId());
+					
+					if(itemsList.isEmpty()) {
+						System.out.println("This order does not contain items");
+					}
+						
+					else {
+							
+						System.out.println("ITEMS FROM " + deleteOrder.getOrderNumber());
+						for(OrderItem item : itemsList) {
+							System.out.println(item);
+						}
+						
+						OrderItem deleteItem = null;
+						int deleteItemId;
+						boolean validItem = false;
+						do {
+							try {
+								System.out.println("Enter item ID to delete: ");
+								deleteItemId = sc.nextInt();
+								sc.nextLine();
+									
+								if(deleteItemId <= 0) {
+									System.out.println("Id can only be positive");
+								}
+								else {
+									deleteItem = orderItemDao.findById(deleteItemId);
+									if(deleteItem == null) {
+										System.out.println("There is no item with that id");
+									}
+									else if(!itemsList.contains(deleteItem)) {
+										System.out.println("This item is not in the order");
+									}
+									else {
+										validItem = true;
+									}
+								}
+							}
+							catch(InputMismatchException e) {
+								System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
+								sc.nextLine();
+							}
+								
+						}while(!validItem);
+						
+						System.out.print("Are you sure you want to delete this item? (y/n): ");
+						String confirm = sc.nextLine();
+						
+						if(confirm.equalsIgnoreCase("y")) {
+							orderItemDao.deleteById(deleteItem.getId());
+							System.out.println("Item successfully deleted!");
+						}
+						else {
+							System.out.println("Deletion aborted!");
+						}
+
+					}
+					break;
+					
+				case 5:
+					System.out.println("Returning to order menu...");
+					break;
+					
+				default:
+					System.out.println("Invalid option!");
+					break;
+					
+			}
+			
+	} while(choice != 5);
+		
+		
 		
 	}
 
