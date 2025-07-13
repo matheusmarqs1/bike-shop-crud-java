@@ -4,6 +4,8 @@ import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import model.dao.CustomerDao;
 import model.dao.DaoFactory;
@@ -19,6 +21,77 @@ public class Program {
 	
 	public static Scanner sc = new Scanner(System.in);
 	
+	
+	private static int getValidChoice(Scanner sc, int min, int max) {
+		int choice = 0;
+		boolean isValid = false;
+		do {
+			try {
+				System.out.print("Choose an option: ");
+				choice = sc.nextInt();
+				
+				
+				if(choice < min || choice > max) {
+					System.out.println("Please enter a number between " + min + " and " + max);
+				}
+				else {
+					isValid = true;
+				}
+				
+				
+			}
+			catch(InputMismatchException e) {
+				System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
+				sc.nextLine();
+			}
+		} while(!isValid);
+		
+		return choice;
+	}
+	
+	private static int getValidId(Scanner sc) {
+		int id = 0;
+		boolean isValid = false;
+		do {
+			try {
+				System.out.print("Enter a valid id: ");
+				id = sc.nextInt();
+				
+				
+				if(id <= 0) {
+					System.out.println("Please enter a positive number");
+				}
+				else {
+					isValid = true;
+				}
+				
+				
+			}
+			catch(InputMismatchException e) {
+				System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
+				sc.nextLine();
+			}
+		} while(!isValid);
+		
+		return id;
+	}
+	
+	private static boolean validateEmail(String email) {
+		 
+		 String regexEmail = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)+$";
+		 Pattern pattern = Pattern.compile(regexEmail);
+		 Matcher matcher = pattern.matcher(email);
+		 return matcher.matches();
+	}
+	
+	private static boolean validateTelephone(String telephone) {
+		
+		String regexTelephone = "^\\(?\\d{2}\\)?\\s?9\\d{4}-?\\d{4}$";
+		Pattern pattern = Pattern.compile(regexTelephone);
+		Matcher matcher = pattern.matcher(telephone);
+		return matcher.matches();
+	}
+	
 	public static void main(String[] args) {
 		
 		Locale.setDefault(Locale.US);
@@ -30,9 +103,8 @@ public class Program {
 			System.out.println("3. Manage Orders");
 			System.out.println("4. Exit");
 			
-			System.out.print("Choose an option: ");
-			choice = sc.nextInt();
-			
+			choice = getValidChoice(sc, 1, 4);
+				
 			switch(choice) {
 				case 1:
 					menuCustomers();
@@ -62,7 +134,10 @@ public class Program {
 	public static void menuCustomers() {
 		
 		CustomerDao customerDao = DaoFactory.createCustomerDao();
-		int choice;
+		List<Customer> list = customerDao.findAll();
+		int choice = 0;
+		boolean isValidEmail = false;
+		boolean isValidTelephone = false;
 		
 		do {
 			System.out.println("\"===== CUSTOMER MENU =====\"");
@@ -73,13 +148,11 @@ public class Program {
 			System.out.println("5. Delete customer");
 			System.out.println("6. Return to main menu");
 			
-			System.out.print("Choose an option: ");
-			choice = sc.nextInt();
+			choice = getValidChoice(sc, 1, 6);
 			sc.nextLine();
 			
 			switch(choice) {
 				case 1:
-					List<Customer> list = customerDao.findAll();
 					System.out.println("=== CUSTOMER LIST ===");
 					if(list.isEmpty()) {
 						System.out.println("No customers registered!");
@@ -93,9 +166,7 @@ public class Program {
 					
 				case 2:
 					System.out.println("=== VIEW CUSTOMER DETAILS ===");
-					System.out.print("Enter an id for the search: ");
-					int id = sc.nextInt();
-					sc.nextLine();
+					int id = getValidId(sc);
 					Customer customer = customerDao.findById(id);
 					if(customer == null) {
 						System.out.println("No customer found with that id!");
@@ -109,12 +180,45 @@ public class Program {
 					System.out.println("=== ADD NEW CUSTOMER ===");
 					System.out.println("Enter first name: ");
 					String firstName = sc.nextLine();
+
 					System.out.println("Enter last name: ");
 					String lastName = sc.nextLine();
-					System.out.println("Enter email: ");
-					String email = sc.nextLine();
-					System.out.println("Enter the phone: ");
-					String telephone = sc.nextLine();
+					
+					
+					String email;
+					do {
+						System.out.println("Enter a valid email (eg., matheus@example.com): ");
+						email = sc.nextLine();
+						isValidEmail = validateEmail(email);
+	
+						if(!isValidEmail) {
+							System.out.println("Invalid email format! Please try again");
+						}
+						
+						else {
+							for(Customer obj : list) {
+								if(obj.getEmail().equals(email)) {
+									System.out.println("Email already registered!");
+									isValidEmail = false;
+									break;
+								}
+							}
+						}
+						
+						
+					} while(!isValidEmail);
+					
+					String telephone;
+					do {
+						System.out.println("Enter the phone(only numbers, 11 digits): ");
+						telephone = sc.nextLine();
+						isValidTelephone = validateTelephone(telephone);
+						if(!isValidTelephone) {
+							System.out.println("Invalid telephone! Please try again");
+						}
+					} while(!isValidTelephone);
+					telephone = telephone.replaceAll("\\D", "");
+					
 					System.out.println("Enter address: ");
 					String address = sc.nextLine();
 					
@@ -125,8 +229,8 @@ public class Program {
 					
 				case 4:
 					System.out.println("=== UPDATE CUSTOMER ===");
-					System.out.println("Enter the id of the customer to update: ");
-					int updateId = sc.nextInt();
+					
+					int updateId = getValidId(sc);
 					sc.nextLine();
 					Customer updateCustomer = customerDao.findById(updateId);
 					
@@ -148,20 +252,50 @@ public class Program {
 							newLastName = updateCustomer.getLast_name();
 						}
 						
-						System.out.println("Enter new email (" + updateCustomer.getEmail() + "): ");
-						String newEmail = sc.nextLine();
+						String newEmail;
+						do {
+							System.out.println("Enter new email (" + updateCustomer.getEmail() + "): ");
+							newEmail = sc.nextLine();
+							if(newEmail.trim().isEmpty()) {
+								newEmail = updateCustomer.getEmail();
+								isValidEmail = true;
+							}
+							else {
+								isValidEmail = validateEmail(newEmail);
+								if(!isValidEmail) {
+									System.out.println("Invalid email format! Please try again");
+								}
+								else {
+									for(Customer obj : list) {
+										if(obj.getEmail().equals(newEmail)) {
+											System.out.println("Email already registered!");
+											isValidEmail = false;
+											break;
+										}
+									}
+								}
+							}
+						} while(!isValidEmail);
+					
+						String newTelephone;
+						do {
+							System.out.println("Enter new phone (" + updateCustomer.getTelephone() + "): ");
+							newTelephone = sc.nextLine();
+							
+							if(newTelephone.trim().isEmpty()) {
+								newTelephone = updateCustomer.getTelephone();
+								isValidTelephone = true;
+							}
+							else {
+								isValidTelephone = validateTelephone(newTelephone);
+								if(!isValidTelephone) {
+									System.out.println("Invalid telephone! Please try again");
+								}
+							}
+						} while(!isValidTelephone);
 						
-						if(newEmail.trim().isEmpty()) {
-							newEmail = updateCustomer.getEmail();
-						}
-						
-						System.out.println("Enter new phone (" + updateCustomer.getTelephone() + "): ");
-						String newTelephone = sc.nextLine();
-						
-						if(newTelephone.trim().isEmpty()) {
-							newTelephone = updateCustomer.getTelephone();
-						}
-						
+						newTelephone = newTelephone.replaceAll("\\D", "");
+
 						System.out.println("Enter new address (" + updateCustomer.getAddress() + "): ");
 						String newAddress = sc.nextLine();
 						
@@ -183,8 +317,7 @@ public class Program {
 					
 				case 5:
 					System.out.println("=== DELETE CUSTOMER ===");
-					System.out.println("Enter the id of the customer to delete: ");
-					int deleteId = sc.nextInt();
+					int deleteId = getValidId(sc);
 					sc.nextLine();
 					
 					Customer deleteCustomer = customerDao.findById(deleteId);
@@ -221,7 +354,7 @@ public class Program {
 		} while(choice != 6);
 		
 	}
-	
+
 	public static void menuProducts() {
 		
 		ProductDao productDao = DaoFactory.createProductDao();
@@ -1004,5 +1137,6 @@ public class Program {
 		
 		
 	}
+
 
 }

@@ -3,8 +3,8 @@ CREATE TABLE `customers` (
     `id` INT UNSIGNED AUTO_INCREMENT,
     `first_name` VARCHAR(50) NOT NULL,
     `last_name` VARCHAR(50) NOT NULL,
-    `email` VARCHAR(255) NOT NULL UNIQUE CHECK(`email` LIKE '%@%.%'),
-    `telephone` VARCHAR(25) NOT NULL CHECK(LENGTH(`telephone`) = 11),
+    `email` VARCHAR(255) NOT NULL UNIQUE,
+    `telephone` VARCHAR(25) NOT NULL,
     `address` VARCHAR(255) NOT NULL,
     PRIMARY KEY(`id`)
 );
