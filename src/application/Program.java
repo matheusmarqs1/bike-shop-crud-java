@@ -134,7 +134,6 @@ public class Program {
 	public static void menuCustomers() {
 		
 		CustomerDao customerDao = DaoFactory.createCustomerDao();
-		List<Customer> list = customerDao.findAll();
 		int choice = 0;
 		boolean isValidEmail = false;
 		boolean isValidTelephone = false;
@@ -154,6 +153,7 @@ public class Program {
 			switch(choice) {
 				case 1:
 					System.out.println("=== CUSTOMER LIST ===");
+					List<Customer> list = customerDao.findAll();
 					if(list.isEmpty()) {
 						System.out.println("No customers registered!");
 					}
@@ -196,7 +196,8 @@ public class Program {
 						}
 						
 						else {
-							for(Customer obj : list) {
+							List<Customer> customerList = customerDao.findAll();
+							for(Customer obj : customerList) {
 								if(obj.getEmail().equals(email)) {
 									System.out.println("Email already registered!");
 									isValidEmail = false;
@@ -266,8 +267,9 @@ public class Program {
 									System.out.println("Invalid email format! Please try again");
 								}
 								else {
-									for(Customer obj : list) {
-										if(obj.getEmail().equals(newEmail)) {
+									List<Customer> customerList = customerDao.findAll();
+									for(Customer obj : customerList) {
+										if(obj.getEmail().equals(newEmail) && !(obj.getId() == updateCustomer.getId())) {
 											System.out.println("Email already registered!");
 											isValidEmail = false;
 											break;
@@ -291,10 +293,13 @@ public class Program {
 								if(!isValidTelephone) {
 									System.out.println("Invalid telephone! Please try again");
 								}
+								else {
+									newTelephone = newTelephone.replaceAll("\\D", "");
+								}
 							}
 						} while(!isValidTelephone);
 						
-						newTelephone = newTelephone.replaceAll("\\D", "");
+						
 
 						System.out.println("Enter new address (" + updateCustomer.getAddress() + "): ");
 						String newAddress = sc.nextLine();
