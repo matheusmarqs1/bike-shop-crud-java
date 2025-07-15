@@ -76,22 +76,6 @@ public class Program {
 		return id;
 	}
 	
-	private static boolean validateEmail(String email) {
-		 
-		 String regexEmail = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)+$";
-		 Pattern pattern = Pattern.compile(regexEmail);
-		 Matcher matcher = pattern.matcher(email);
-		 return matcher.matches();
-	}
-	
-	private static boolean validateTelephone(String telephone) {
-		
-		String regexTelephone = "^\\(?\\d{2}\\)?\\s?9\\d{4}-?\\d{4}$";
-		Pattern pattern = Pattern.compile(regexTelephone);
-		Matcher matcher = pattern.matcher(telephone);
-		return matcher.matches();
-	}
-	
 	public static void main(String[] args) {
 		
 		Locale.setDefault(Locale.US);
@@ -129,14 +113,104 @@ public class Program {
 		}while(choice != 4);
 
 	}
+	
+	private static boolean validateEmail(String email) {
+		 
+		 String regexEmail = "^[A-Za-z0-9]+([._-][A-Za-z0-9]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
+		 Pattern pattern = Pattern.compile(regexEmail);
+		 Matcher matcher = pattern.matcher(email);
+		 return matcher.matches();
+	}
+	
+	private static boolean validateTelephone(String telephone) {
+		
+		String regexTelephone = "^\\(?\\d{2}\\)?[\\s.-]?\\d{4,5}[\\s.-]?\\d{4}$";
+		Pattern pattern = Pattern.compile(regexTelephone);
+		Matcher matcher = pattern.matcher(telephone);
+		return matcher.matches();
+	}
+	
+	private static String getValidTelephone(Scanner sc, Customer customer) {
+
+		String telephone;
+		boolean isValidTelephone = false;
+		
+		do {
+			if(customer == null) {
+				System.out.println("Enter the phone(only numbers, 11 digits): ");
+			}
+			else {
+				System.out.println("Enter new phone (" + customer.getTelephone() + ") - leave empty to keep current: ");
+			}
+			telephone = sc.nextLine();
+			
+			if(customer != null && telephone.trim().isEmpty()) {
+				telephone = customer.getTelephone();
+				isValidTelephone = true;
+			}
+			else {
+				if(!validateTelephone(telephone)) {
+					System.out.println("Invalid telephone! Please try again");
+					isValidTelephone = false;
+				}
+				else {
+					telephone = telephone.replaceAll("\\D", "");
+					isValidTelephone = true;
+				}
+				
+			}
+		} while(!isValidTelephone);
+		
+		return telephone;
+	}
+
+	private static String getValidEmail(Scanner sc, Customer customer, CustomerDao customerDao) {
+		
+		boolean isValidEmail = false;
+		String email;
+	
+		do {
+			if(customer == null) {
+				System.out.println("Enter a valid email (eg., matheus@example.com): ");
+			}
+			else {
+				System.out.println("Enter new email (" + customer.getEmail() + ") - leave empty to keep current: ");
+			}
+			email = sc.nextLine();
+			
+			if(customer != null && email.trim().isEmpty()) {
+				email = customer.getEmail();
+				isValidEmail = true;
+				
+			}
+			else {
+				if(!validateEmail(email)) {
+					System.out.println("Invalid email format! Please try again");
+					isValidEmail = false;
+				}
+				else {
+					
+					List<Customer> customerList = customerDao.findAll();
+					for(Customer obj : customerList) {
+						if(obj.getEmail().equals(email) && (customer == null || obj.getId() != customer.getId())) {
+							System.out.println("Email already registered!");
+							isValidEmail = false;
+							break;
+						}
+					}
+				}
+			}
+			
+		} while(!isValidEmail);
+		
+		return email;
+	}
 
 
 	public static void menuCustomers() {
 		
 		CustomerDao customerDao = DaoFactory.createCustomerDao();
-		int choice = 0;
-		boolean isValidEmail = false;
-		boolean isValidTelephone = false;
+		int choice;
 		
 		do {
 			System.out.println("\"===== CUSTOMER MENU =====\"");
@@ -167,6 +241,7 @@ public class Program {
 				case 2:
 					System.out.println("=== VIEW CUSTOMER DETAILS ===");
 					int id = getValidId(sc);
+					sc.nextLine();
 					Customer customer = customerDao.findById(id);
 					if(customer == null) {
 						System.out.println("No customer found with that id!");
@@ -177,6 +252,7 @@ public class Program {
 					break;
 				
 				case 3:
+					Customer newCustomer = null;
 					System.out.println("=== ADD NEW CUSTOMER ===");
 					System.out.println("Enter first name: ");
 					String firstName = sc.nextLine();
@@ -184,46 +260,13 @@ public class Program {
 					System.out.println("Enter last name: ");
 					String lastName = sc.nextLine();
 					
-					
-					String email;
-					do {
-						System.out.println("Enter a valid email (eg., matheus@example.com): ");
-						email = sc.nextLine();
-						isValidEmail = validateEmail(email);
-	
-						if(!isValidEmail) {
-							System.out.println("Invalid email format! Please try again");
-						}
-						
-						else {
-							List<Customer> customerList = customerDao.findAll();
-							for(Customer obj : customerList) {
-								if(obj.getEmail().equals(email)) {
-									System.out.println("Email already registered!");
-									isValidEmail = false;
-									break;
-								}
-							}
-						}
-						
-						
-					} while(!isValidEmail);
-					
-					String telephone;
-					do {
-						System.out.println("Enter the phone(only numbers, 11 digits): ");
-						telephone = sc.nextLine();
-						isValidTelephone = validateTelephone(telephone);
-						if(!isValidTelephone) {
-							System.out.println("Invalid telephone! Please try again");
-						}
-					} while(!isValidTelephone);
-					telephone = telephone.replaceAll("\\D", "");
+					String email = getValidEmail(sc, newCustomer, customerDao);
+					String telephone = getValidTelephone(sc, newCustomer);
 					
 					System.out.println("Enter address: ");
 					String address = sc.nextLine();
 					
-					Customer newCustomer = new Customer(null, firstName, lastName, email, telephone, address);
+					newCustomer = new Customer(null, firstName, lastName, email, telephone, address);
 					customerDao.insert(newCustomer);
 					System.out.println("Inserted! New id = " + newCustomer.getId());
 					break;
@@ -253,53 +296,8 @@ public class Program {
 							newLastName = updateCustomer.getLast_name();
 						}
 						
-						String newEmail;
-						do {
-							System.out.println("Enter new email (" + updateCustomer.getEmail() + "): ");
-							newEmail = sc.nextLine();
-							if(newEmail.trim().isEmpty()) {
-								newEmail = updateCustomer.getEmail();
-								isValidEmail = true;
-							}
-							else {
-								isValidEmail = validateEmail(newEmail);
-								if(!isValidEmail) {
-									System.out.println("Invalid email format! Please try again");
-								}
-								else {
-									List<Customer> customerList = customerDao.findAll();
-									for(Customer obj : customerList) {
-										if(obj.getEmail().equals(newEmail) && !(obj.getId() == updateCustomer.getId())) {
-											System.out.println("Email already registered!");
-											isValidEmail = false;
-											break;
-										}
-									}
-								}
-							}
-						} while(!isValidEmail);
-					
-						String newTelephone;
-						do {
-							System.out.println("Enter new phone (" + updateCustomer.getTelephone() + "): ");
-							newTelephone = sc.nextLine();
-							
-							if(newTelephone.trim().isEmpty()) {
-								newTelephone = updateCustomer.getTelephone();
-								isValidTelephone = true;
-							}
-							else {
-								isValidTelephone = validateTelephone(newTelephone);
-								if(!isValidTelephone) {
-									System.out.println("Invalid telephone! Please try again");
-								}
-								else {
-									newTelephone = newTelephone.replaceAll("\\D", "");
-								}
-							}
-						} while(!isValidTelephone);
-						
-						
+						String newEmail = getValidEmail(sc, updateCustomer, customerDao);
+						String newTelephone = getValidTelephone(sc, updateCustomer);
 
 						System.out.println("Enter new address (" + updateCustomer.getAddress() + "): ");
 						String newAddress = sc.nextLine();
@@ -359,6 +357,181 @@ public class Program {
 		} while(choice != 6);
 		
 	}
+	
+	private static String getValidName(Scanner sc, Product product, ProductDao productDao) {
+		
+		String name;
+		boolean isValidName = false;
+		do {
+			if(product == null) {
+				System.out.println("Enter product name:");
+			}
+			else {
+				System.out.println("Enter new product name (" + product.getName() + ") - leave empty to keep current:");
+			}
+			name = sc.nextLine();
+			
+			if(product != null && name.trim().isEmpty()) {
+				name = product.getName();
+				isValidName = true;
+			}
+			else {
+				if(name.trim().isEmpty()) {
+					System.out.println("Product name cannot be empty! Please enter a name");
+					isValidName = false;
+				}
+				else {
+					isValidName = true;
+					List<Product> list = productDao.findAll();
+					for(Product p : list) {
+						if(p.getName().equalsIgnoreCase(name) && (product == null || product.getId() != p.getId())) {
+							System.out.println("A product with that name already exists. Do you want to register it anyway?(y/n):");
+							String confirm = sc.nextLine();
+							
+							if(confirm.equalsIgnoreCase("y")) {
+								isValidName = true;
+								break;
+							}
+							else {
+								if(product == null) {
+									System.out.println("Registration cancelled for this name. Please enter a different name");
+								}
+								else {
+									System.out.println("Update cancelled for this name. Please enter a different name");
+								}
+								isValidName = false;
+								break;
+							}
+						}
+					}
+				}
+
+				
+			}
+		} while(!isValidName);
+		
+		return name;
+	}
+	private static int getValidStock(Scanner sc, Product product) {
+		int stock = 0;
+		String stockString;
+		boolean isValidStock = false;
+		
+		do {
+			if(product == null) {
+				System.out.println("Enter the quantity in stock (e.g., 10 or 0): ");
+			}
+			else {
+				System.out.println("Enter new quantity in stock (" + product.getInventory() + ") - leave empty to keep current: ");
+			}
+			
+			stockString = sc.nextLine();
+			
+			if(product != null && stockString.trim().isEmpty()) {
+				stock = product.getInventory();
+				isValidStock = true;
+			}
+			else {
+				try {
+					stock = Integer.parseInt(stockString);
+					
+					if(stock < 0) {
+						System.out.println("Invalid stock quantity! Stock cannot be a negative number");
+						isValidStock = false;
+					}
+					else {
+						isValidStock = true;
+					}
+				}
+				catch(NumberFormatException e) {
+					System.out.println("Invalid input. Please enter a whole number (e.g., 10, 15)");
+					isValidStock = false;
+				}
+			}
+			
+			
+		} while(!isValidStock);
+		
+		return stock;
+	}
+
+	private static double getValidPrice(Scanner sc, Product product) {
+		
+		double price = 0.0;
+		String priceString;
+		boolean isValidPrice = false;
+		do {
+			if(product == null) {
+				System.out.println("Enter product price (e.g., 10.50): ");
+			}
+			else {
+				System.out.println("Enter new price (" + product.getPrice() + ") - leave empty to keep current: ");
+			}
+			
+			priceString = sc.nextLine();
+			
+			if(product != null && priceString.trim().isEmpty()) {
+				price = product.getPrice();
+				isValidPrice = true;
+			}
+			else {
+				try {
+					price = Double.parseDouble(priceString);
+					if(price <= 0.0) {
+						System.out.println("Invalid price! The price must be a positive number");
+						isValidPrice = false;
+					}
+					else {
+						isValidPrice = true;
+					}
+					
+				}
+				catch(NumberFormatException e) {
+					  System.out.println("Invalid input! Please enter a numeric value for the price (e.g., 10.50 or 25)");
+					  isValidPrice = false;
+				}
+			}
+			
+		} while(!isValidPrice);
+		
+		return price;
+	}
+
+	private static String getValidCategory(Scanner sc, Product product) {
+		boolean isValidCategory = false;
+		String category;
+		do {
+			
+			if(product == null) {
+				System.out.println("Enter category (e.g., bicycle, accessories, bicycle components):  ");
+			}
+			else {
+				System.out.println("Enter new category (" + product.getCategory() + ") - leave empty to keep current: ");
+			}
+			category = sc.nextLine();
+			
+			if(product != null && category.trim().isEmpty()) {
+				category = product.getCategory();
+				isValidCategory = true;
+			}
+			
+			else {
+				if(!(category.equalsIgnoreCase("bicycle") || category.equalsIgnoreCase("accessories") || category.equalsIgnoreCase("bicycle components"))) {
+					System.out.println("Invalid category! Please choose from: bicycle, accessories or bicycle components");
+					isValidCategory = false;			
+				}
+				else {
+					category = category.toLowerCase();
+					isValidCategory = true;
+				}
+			}
+			
+			
+		} while(!isValidCategory);
+		
+		return category;
+		
+	}
 
 	public static void menuProducts() {
 		
@@ -367,7 +540,7 @@ public class Program {
 		
 		do {
 			
-			System.out.println("\"===== PRODUCT MENU =====\"");
+			System.out.println("==== PRODUCT MENU ===");
 			System.out.println("1. List all products");
 			System.out.println("2. View product details");
 			System.out.println("3. Add new product");
@@ -375,8 +548,7 @@ public class Program {
 			System.out.println("5. Delete product");
 			System.out.println("6. Return to main menu");
 			
-			System.out.print("Choose an option: ");
-			choice = sc.nextInt();
+			choice = getValidChoice(sc, 1, 6);
 			sc.nextLine();
 			
 			switch(choice) {
@@ -396,8 +568,7 @@ public class Program {
 				
 				case 2:
 					System.out.println("=== VIEW PRODUCT DETAILS ===");
-					System.out.println("Enter an id for the search: ");
-					int id = sc.nextInt();
+					int id = getValidId(sc);
 					sc.nextLine();
 					Product product = productDao.findById(id);
 					if(product == null) {
@@ -412,41 +583,16 @@ public class Program {
 				case 3:
 					System.out.println("=== ADD NEW PRODUCT ===");
 					
-					System.out.println("Enter name: ");
-					String name = sc.nextLine();
+					Product newProduct = null;
+					
+					String name = getValidName(sc, newProduct, productDao);
 					System.out.println("Enter description: ");
 					String description = sc.nextLine();
-					System.out.println("Enter category: ");
-					String category = sc.nextLine();
+					String category = getValidCategory(sc, newProduct);
+					double price = getValidPrice(sc, newProduct);
+					int stock = getValidStock(sc, newProduct);
 					
-					
-					double price;
-					do {
-						System.out.println("Enter price: ");
-						String priceString = sc.nextLine();
-						try {
-							price = Double.parseDouble(priceString);
-							break;
-						}
-						catch(NumberFormatException e) {
-							 System.out.println("Invalid input. Please enter a numeric value (e.g., 10.50)");
-						}
-					} while(true);
-					
-					int stock;
-					do {
-						System.out.println("Enter the quantity in stock: ");
-						String stockString = sc.nextLine();
-						try {
-							stock = Integer.parseInt(stockString);
-							break;
-						}
-						catch(NumberFormatException e) {
-							System.out.println("Invalid input. Please enter a whole number (e.g., 15)");
-						}
-					} while(true);
-					
-					Product newProduct = new Product(null, name, description, category, price, stock);
+					newProduct = new Product(null, name, description, category, price, stock);
 					productDao.insert(newProduct);
 					System.out.println("Inserted! New id = " + newProduct.getId());
 					break;
@@ -455,7 +601,7 @@ public class Program {
 					System.out.println("=== UPDATE PRODUCT ===");
 					
 					System.out.println("Enter the id of the product to update: ");
-					int updateId = sc.nextInt();
+					int updateId = getValidId(sc);
 					sc.nextLine();
 					
 					Product updateProduct = productDao.findById(updateId);
@@ -463,12 +609,7 @@ public class Program {
 						System.out.println("No product found with that id!");
 					}
 					else {
-						System.out.println("Enter new name (" + updateProduct.getName() + "): ");
-						String newName = sc.nextLine();
-						
-						if(newName.trim().isEmpty()) {
-							newName = updateProduct.getName();
-						}
+						String newName = getValidName(sc, updateProduct, productDao);
 						
 						System.out.println("Enter new description (" + updateProduct.getDescription() + "): ");
 						String newDescription = sc.nextLine();
@@ -477,55 +618,9 @@ public class Program {
 							newDescription = updateProduct.getDescription();
 						}
 						
-						System.out.println("Enter new category (" + updateProduct.getCategory() + "): ");
-						String newCategory = sc.nextLine();
-						
-						if(newCategory.trim().isEmpty()) {
-							newCategory = updateProduct.getCategory();
-						}
-						
-						double newPrice;
-						do {
-							
-							System.out.println("Enter new price (" + updateProduct.getPrice() + "): ");
-							String inputPrice = sc.nextLine();
-							
-							if(inputPrice.trim().isEmpty()) {
-								newPrice = updateProduct.getPrice();
-								break;
-							}
-							else {
-								try {
-									newPrice = Double.parseDouble(inputPrice);
-									break;
-								}
-								catch(NumberFormatException e) {
-									System.out.println("Invalid input. Please enter a numeric value(e.g., 10.50)");
-								}
-							}
-						} while(true);
-						
-						int newStock;
-						do {
-							
-							System.out.println("Enter new quantity in stock: (" + updateProduct.getInventory() + "): ");
-							String inputStock = sc.nextLine();
-							
-							if(inputStock.trim().isEmpty()) {
-								newStock = updateProduct.getInventory();
-								break;
-							}
-							else {
-								try {
-									newStock = Integer.parseInt(inputStock);
-									break;
-								}
-								catch(NumberFormatException e) {
-									System.out.println("Invalid input. Please enter a whole number (e.g., 15)");
-								}
-							
-							}
-						} while(true);
+						String newCategory = getValidCategory(sc, updateProduct);
+						double newPrice = getValidPrice(sc, updateProduct);
+						int newStock = getValidStock(sc, updateProduct);
 						
 						updateProduct.setName(newName);
 						updateProduct.setDescription(newDescription);
@@ -540,8 +635,7 @@ public class Program {
 					
 				case 5:
 					System.out.println("=== DELETE PRODUCT ===");
-					System.out.println("Enter the id of the product to delete: ");
-					int deleteId = sc.nextInt();
+					int deleteId = getValidId(sc);
 					sc.nextLine();
 					Product deleteProduct = productDao.findById(deleteId);
 					if(deleteProduct == null) {
@@ -575,7 +669,7 @@ public class Program {
 
 		} while(choice != 6);
 	}
-	
+
 	public static void menuOrders() {
 		
 		OrderDao orderDao = DaoFactory.createOrderDao();
