@@ -19,9 +19,6 @@ import model.entities.Product;
 
 public class Program {
 	
-	public static Scanner sc = new Scanner(System.in);
-	
-	
 	private static int getValidChoice(Scanner sc, int min, int max) {
 		int choice = 0;
 		boolean isValid = false;
@@ -79,38 +76,41 @@ public class Program {
 	public static void main(String[] args) {
 		
 		Locale.setDefault(Locale.US);
-		int choice;
-		do {
-			System.out.println("=== MAIN MENU ===");
-			System.out.println("1. Manage Customers");
-			System.out.println("2. Manage Products");
-			System.out.println("3. Manage Orders");
-			System.out.println("4. Exit");
-			
-			choice = getValidChoice(sc, 1, 4);
+		try(Scanner sc = new Scanner(System.in)) {
+			int choice;
+			do {
+				System.out.println("=== MAIN MENU ===");
+				System.out.println("1. Manage Customers");
+				System.out.println("2. Manage Products");
+				System.out.println("3. Manage Orders");
+				System.out.println("4. Exit");
 				
-			switch(choice) {
-				case 1:
-					menuCustomers();
-					break;
+				choice = getValidChoice(sc, 1, 4);
 					
-				case 2:
-					menuProducts();
-					break;
+				switch(choice) {
+					case 1:
+						menuCustomers(sc);
+						break;
+						
+					case 2:
+						menuProducts(sc);
+						break;
+						
+					case 3:
+						menuOrders(sc);
+						break;
 					
-				case 3:
-					menuOrders();
-					break;
-				
-				case 4:
-					System.out.println("Leaving...");
-					break;
-					
-				default:
-					System.out.println("Invalid option!");
-					break;
-			}
-		}while(choice != 4);
+					case 4:
+						System.out.println("Leaving...");
+						break;
+						
+					default:
+						System.out.println("Invalid option!");
+						break;
+				}
+			}while(choice != 4);
+		}
+		
 
 	}
 	
@@ -142,16 +142,18 @@ public class Program {
 			else {
 				System.out.println("Enter new phone (" + customer.getTelephone() + ") - leave empty to keep current: ");
 			}
-			telephone = sc.nextLine();
+			telephone = sc.nextLine().trim();
 			
-			if(customer != null && telephone.trim().isEmpty()) {
+			if(customer != null && telephone.isEmpty()) {
 				telephone = customer.getTelephone();
 				isValidTelephone = true;
 			}
 			else {
-				if(!validateTelephone(telephone)) {
+				if(telephone.isEmpty()) {
+					System.out.println("Telephone name cannot be empty! Please enter a valid telephone");
+				}
+				else if(!validateTelephone(telephone)) {
 					System.out.println("Invalid telephone! Please try again");
-					isValidTelephone = false;
 				}
 				else {
 					telephone = telephone.replaceAll("\\D", "");
@@ -170,33 +172,38 @@ public class Program {
 		String email;
 	
 		do {
+			boolean isDuplicate = false;
+			
 			if(customer == null) {
 				System.out.println("Enter a valid email (eg., matheus@example.com): ");
 			}
 			else {
 				System.out.println("Enter new email (" + customer.getEmail() + ") - leave empty to keep current: ");
 			}
-			email = sc.nextLine();
+			email = sc.nextLine().trim();
 			
-			if(customer != null && email.trim().isEmpty()) {
+			if(customer != null && email.isEmpty()) {
 				email = customer.getEmail();
-				isValidEmail = true;
-				
+				isValidEmail = true;	
 			}
 			else {
-				if(!validateEmail(email)) {
+				if(email.isEmpty()) {
+					System.out.println("Email cannot be empty! Please enter a valid email");
+				}
+				else if(!validateEmail(email)) {
 					System.out.println("Invalid email format! Please try again");
-					isValidEmail = false;
 				}
 				else {
-					
 					List<Customer> customerList = customerDao.findAll();
 					for(Customer obj : customerList) {
 						if(obj.getEmail().equals(email) && (customer == null || obj.getId() != customer.getId())) {
 							System.out.println("Email already registered!");
-							isValidEmail = false;
+							isDuplicate = true;
 							break;
 						}
+					}
+					if(!isDuplicate) {
+						isValidEmail = true;
 					}
 				}
 			}
@@ -207,7 +214,7 @@ public class Program {
 	}
 
 
-	public static void menuCustomers() {
+	public static void menuCustomers(Scanner sc) {
 		
 		CustomerDao customerDao = DaoFactory.createCustomerDao();
 		int choice;
@@ -240,6 +247,11 @@ public class Program {
 					
 				case 2:
 					System.out.println("=== VIEW CUSTOMER DETAILS ===");
+					
+					for(Customer customer : customerDao.findAll()){
+						System.out.println(customer);
+					}
+					
 					int id = getValidId(sc);
 					sc.nextLine();
 					Customer customer = customerDao.findById(id);
@@ -273,6 +285,10 @@ public class Program {
 					
 				case 4:
 					System.out.println("=== UPDATE CUSTOMER ===");
+					
+					for(Customer obj : customerDao.findAll()){
+						System.out.println(obj);
+					}
 					
 					int updateId = getValidId(sc);
 					sc.nextLine();
@@ -324,6 +340,10 @@ public class Program {
 					
 				case 5:
 					System.out.println("=== DELETE CUSTOMER ===");
+					for(Customer obj : customerDao.findAll()) {
+						System.out.println(obj);
+					}
+					
 					int deleteId = getValidId(sc);
 					sc.nextLine();
 					
@@ -373,14 +393,14 @@ public class Program {
 			else {
 				System.out.println("Enter new product name (" + product.getName() + ") - leave empty to keep current:");
 			}
-			name = sc.nextLine();
+			name = sc.nextLine().trim();
 			
-			if(product != null && name.trim().isEmpty()) {
+			if(product != null && name.isEmpty()) {
 				name = product.getName();
 				isValidName = true;
 			}
 			else {
-				if(name.trim().isEmpty()) {
+				if(name.isEmpty()) {
 					System.out.println("Product name cannot be empty! Please enter a name");
 					isValidName = false;
 				}
@@ -429,27 +449,34 @@ public class Program {
 				System.out.println("Enter new quantity in stock (" + product.getInventory() + ") - leave empty to keep current: ");
 			}
 			
-			stockString = sc.nextLine();
+			stockString = sc.nextLine().trim();
 			
-			if(product != null && stockString.trim().isEmpty()) {
+			if(product != null && stockString.isEmpty()) {
 				stock = product.getInventory();
 				isValidStock = true;
 			}
 			else {
-				try {
-					stock = Integer.parseInt(stockString);
-					
-					if(stock < 0) {
-						System.out.println("Invalid stock quantity! Stock cannot be a negative number");
+				if(stockString.isEmpty()) {
+					System.out.println("Stock cannot be empty! Please enter a stock quantity");
+					isValidStock = false;
+				}
+				
+				else {
+					try {
+						stock = Integer.parseInt(stockString);
+						
+						if(stock < 0) {
+							System.out.println("Invalid stock quantity! Stock cannot be a negative number");
+							isValidStock = false;
+						}
+						else {
+							isValidStock = true;
+						}
+					}
+					catch(NumberFormatException e) {
+						System.out.println("Invalid input. Please enter a whole number (e.g., 10, 15)");
 						isValidStock = false;
 					}
-					else {
-						isValidStock = true;
-					}
-				}
-				catch(NumberFormatException e) {
-					System.out.println("Invalid input. Please enter a whole number (e.g., 10, 15)");
-					isValidStock = false;
 				}
 			}
 			
@@ -472,27 +499,35 @@ public class Program {
 				System.out.println("Enter new price (" + product.getPrice() + ") - leave empty to keep current: ");
 			}
 			
-			priceString = sc.nextLine();
+			priceString = sc.nextLine().trim();
 			
-			if(product != null && priceString.trim().isEmpty()) {
+			if(product != null && priceString.isEmpty()) {
 				price = product.getPrice();
 				isValidPrice = true;
 			}
 			else {
-				try {
-					price = Double.parseDouble(priceString);
-					if(price <= 0.0) {
-						System.out.println("Invalid price! The price must be a positive number");
-						isValidPrice = false;
-					}
-					else {
-						isValidPrice = true;
-					}
-					
+				
+				if(priceString.isEmpty()) {
+					System.out.println("Price cannot be empty! Please enter a price");
+					isValidPrice = false;
 				}
-				catch(NumberFormatException e) {
-					  System.out.println("Invalid input! Please enter a numeric value for the price (e.g., 10.50 or 25)");
-					  isValidPrice = false;
+				
+				else {
+					try {
+						price = Double.parseDouble(priceString);
+						if(price <= 0.0) {
+							System.out.println("Invalid price! The price must be a positive number");
+							isValidPrice = false;
+						}
+						else {
+							isValidPrice = true;
+						}
+						
+					}
+					catch(NumberFormatException e) {
+						  System.out.println("Invalid input! Please enter a numeric value for the price (e.g., 10.50 or 25)");
+						  isValidPrice = false;
+					}
 				}
 			}
 			
@@ -512,15 +547,20 @@ public class Program {
 			else {
 				System.out.println("Enter new category (" + product.getCategory() + ") - leave empty to keep current: ");
 			}
-			category = sc.nextLine();
+			category = sc.nextLine().trim();
 			
-			if(product != null && category.trim().isEmpty()) {
+			if(product != null && category.isEmpty()) {
 				category = product.getCategory();
 				isValidCategory = true;
 			}
 			
 			else {
-				if(!(category.equalsIgnoreCase("bicycle") || category.equalsIgnoreCase("accessories") || category.equalsIgnoreCase("bicycle components"))) {
+				if(category.isEmpty()) {
+					System.out.println("Category cannot be empty! Please enter a category");
+					isValidCategory = false;
+				}
+				
+				else if(!(category.equalsIgnoreCase("bicycle") || category.equalsIgnoreCase("accessories") || category.equalsIgnoreCase("bicycle components"))) {
 					System.out.println("Invalid category! Please choose from: bicycle, accessories or bicycle components");
 					isValidCategory = false;			
 				}
@@ -537,7 +577,7 @@ public class Program {
 		
 	}
 
-	public static void menuProducts() {
+	public static void menuProducts(Scanner sc) {
 		
 		ProductDao productDao = DaoFactory.createProductDao();
 		int choice;
@@ -572,6 +612,9 @@ public class Program {
 				
 				case 2:
 					System.out.println("=== VIEW PRODUCT DETAILS ===");
+					for(Product p : productDao.findAll()) {
+						System.out.println(p);
+					}
 					int id = getValidId(sc);
 					sc.nextLine();
 					Product product = productDao.findById(id);
@@ -596,6 +639,7 @@ public class Program {
 					double price = getValidPrice(sc, newProduct);
 					int stock = getValidStock(sc, newProduct);
 					
+					
 					newProduct = new Product(null, name, description, category, price, stock);
 					productDao.insert(newProduct);
 					System.out.println("Inserted! New id = " + newProduct.getId());
@@ -604,7 +648,10 @@ public class Program {
 				case 4:
 					System.out.println("=== UPDATE PRODUCT ===");
 					
-					System.out.println("Enter the id of the product to update: ");
+					for(Product p : productDao.findAll()) {
+						System.out.println(p);
+					}
+					
 					int updateId = getValidId(sc);
 					sc.nextLine();
 					
@@ -642,6 +689,10 @@ public class Program {
 					
 				case 5:
 					System.out.println("=== DELETE PRODUCT ===");
+					
+					for(Product p : productDao.findAll()) {
+						System.out.println(p);
+					}
 					int deleteId = getValidId(sc);
 					sc.nextLine();
 					Product deleteProduct = productDao.findById(deleteId);
@@ -676,8 +727,92 @@ public class Program {
 
 		} while(choice != 6);
 	}
+	
+	private static String getValidStatus(Scanner sc, Order order) {
+		boolean isValidStatus = false;
+		String newStatus;
+		String[] validStatuses = {"pending", "paid", "shipped", "delivered"};
+		do {
+			System.out.println("Enter new status(e.g., pending, paid, shipped, delivered) : (" + order.getStatus() + ") - leave empty to keep current: ");
+			newStatus = sc.nextLine().trim().toLowerCase();
+			
+			if(newStatus.isEmpty()) {
+				newStatus = order.getStatus();
+				isValidStatus = true;
+			}
+			else if(newStatus.equals(order.getStatus())) {
+				System.out.println("The order is already in the " + newStatus + " status. Please enter a different status if you wish to update it");
+				isValidStatus = false;
+			}
+			else {
+				boolean isStatusListed = false;
+				for(String status : validStatuses) {
+					if(status.equalsIgnoreCase(newStatus)) {
+						isStatusListed = true;
+						break;
+					}
+					
+				}
+				if(isStatusListed) {
+					isValidStatus = true;
+				}
+				else {
+					System.out.println("Invalid status. Please choose from the following options: [pending, paid, shipped, delivered]");
+					isValidStatus = false;
+				}
+				
+				
+			}
+		} while(!isValidStatus);
+		
+		return newStatus;
+	}
 
-	public static void menuOrders() {
+
+	private static String getValidOrderNumber(Scanner sc, OrderDao orderDao) {
+		String orderNumber;
+		boolean isValidOrderNumber = false;
+		do {
+			
+			System.out.println("Enter order number(eg., ORD-2025-***): ");
+			orderNumber = sc.nextLine().trim();
+			
+			if(!validateOrderNumber(orderNumber)) {
+				System.out.println("Invalid order number format. Try again");
+				isValidOrderNumber = false;
+			}
+			else {
+				boolean orderNumberExists = false;
+				
+				List<Order> list = orderDao.findAll();
+				for(Order order : list) {
+					if(order.getOrderNumber().equals(orderNumber)) {
+						System.out.println("Order number already exists. Try again");
+						orderNumberExists = true;
+						break;
+					}
+				}
+				
+				if(!orderNumberExists) {
+					isValidOrderNumber = true;
+				}
+				
+			}
+			
+		} while(!isValidOrderNumber);
+		
+		return orderNumber;
+		
+	}
+	
+	private static boolean validateOrderNumber(String orderNumber) {
+		String regexOrderNumber = "^ORD-2025-[A-Za-z0-9]{3}$";
+		Pattern pattern = Pattern.compile(regexOrderNumber);
+		Matcher matcher = pattern.matcher(orderNumber);
+		return matcher.matches();
+	}
+
+	public static void menuOrders(Scanner sc) {
 		
 		OrderDao orderDao = DaoFactory.createOrderDao();
 		CustomerDao customerDao = DaoFactory.createCustomerDao();
@@ -714,7 +849,9 @@ public class Program {
 						
 					case 2:
 						System.out.println("=== VIEW ORDER DETAILS ===");
-						
+						for(Order o : orderDao.findAll()) {
+							System.out.println(o);
+						}
 						int id = getValidId(sc);
 						sc.nextLine();
 						
@@ -730,7 +867,9 @@ public class Program {
 						
 					case 3:
 						System.out.println("=== LIST CUSTOMER'S ORDER ===");
-						
+						for(Customer c : customerDao.findAll()) {
+							System.out.println(c);
+						}
 						int customerId = getValidId(sc);
 						sc.nextLine();
 						
@@ -749,9 +888,13 @@ public class Program {
 						
 					case 4:
 						System.out.println("=== CREATE NEW ORDER ===");
-						
+						for(Order o : orderDao.findAll()) {
+							System.out.println(o);
+						}
 						String orderNumber = getValidOrderNumber(sc, orderDao);
-						
+						for(Customer c : customerDao.findAll()) {
+							System.out.println(c);
+						}
 						int orderCustomerId = getValidId(sc);
 						Customer customer = customerDao.findById(orderCustomerId);
 							
@@ -769,6 +912,9 @@ public class Program {
 					case 5:
 						System.out.println("=== UPDATE ORDER STATUS ===");
 						
+						for(Order o : orderDao.findAll()) {
+							System.out.println(o);
+						}
 						int updateOrderId = getValidId(sc);
 						sc.nextLine();
 						Order updateOrder = orderDao.findById(updateOrderId);
@@ -777,11 +923,16 @@ public class Program {
 							System.out.println("No order found with that id!");
 						}
 						else {
+							
 							System.out.println("Order details:");
 							System.out.println(updateOrder);
 							
 							String newStatus = getValidStatus(sc, updateOrder);
-
+							
+							if(updateOrder.getTotalAmount() == 0 && newStatus != "canceled") {
+								System.out.println("The order total is $0. The status can only be updated to 'canceled' ");
+								break;
+							}
 							updateOrder.setStatus(newStatus);
 							orderDao.update(updateOrder);
 							System.out.println("Order updated successfully! ");
@@ -791,9 +942,10 @@ public class Program {
 						
 					case 6:
 						System.out.println("=== CANCEL ORDER ===");
-						
-						System.out.println("Enter the id of the order to cancel: ");
-						int cancelOrderId = sc.nextInt();
+						for(Order o : orderDao.findAll()) {
+							System.out.println(o);
+						}
+						int cancelOrderId = getValidId(sc);
 						sc.nextLine();
 						
 						Order cancelOrder = orderDao.findById(cancelOrderId);
@@ -809,6 +961,11 @@ public class Program {
 								System.out.println("Cannot cancel a delivered order!");
 								break;
 							}
+							if("shipped".equals(cancelOrder.getStatus())) {
+								System.out.println("Cannot cancel a shipped order!");
+								break;
+							}
+							
 							System.out.println("Order details:");
 							System.out.println(cancelOrder);
 							System.out.print("Are you sure you want to cancel this order? (y/n): ");
@@ -827,7 +984,7 @@ public class Program {
 						break;
 						
 					case 7:
-						menuOrderItems();
+						menuOrderItems(sc);
 						break;
 						
 					case 8 :
@@ -841,103 +998,178 @@ public class Program {
 		} while(choice != 8);
 
 	}
-
-
 	
-	private static String getValidStatus(Scanner sc, Order order) {
-			boolean isValidStatus = false;
-			String newStatus;
-			String[] validStatuses = {"pending", "paid", "shipped", "delivered"};
-			do {
-				System.out.println("Enter new status(e.g., pending, paid, shipped, delivered) : (" + order.getStatus() + ") - leave empty to keep current: ");
-				newStatus = sc.nextLine().toLowerCase();
+	private static Order getValidOrder(Scanner sc, OrderDao orderDao) {
+		Order deleteOrder = null;
+		int deleteOrderId = 0;
+		boolean isValidOrder = false;
+		
+		do {
+			try {
+				System.out.println("Enter an existing order id: ");
+				deleteOrderId = sc.nextInt();
+				sc.nextLine();
 				
-				if(newStatus.trim().isEmpty()) {
-					newStatus = order.getStatus();
-					isValidStatus = true;
-				}
-				else if(newStatus.equals(order.getStatus())) {
-					System.out.println("The order is already in the " + newStatus + " status. Please enter a different status if you wish to update it");
-					isValidStatus = false;
+				if(deleteOrderId <= 0) {
+					System.out.println("Id can only be positive! ");
 				}
 				else {
-					boolean isStatusListed = false;
-					for(String status : validStatuses) {
-						if(status.equalsIgnoreCase(newStatus)) {
-							isStatusListed = true;
-							break;
+					deleteOrder = orderDao.findById(deleteOrderId);
+					if(deleteOrder == null) {
+						System.out.println("No order found with that id!");
+					}
+					else if(!(deleteOrder.getStatus().equals("pending"))){
+						System.out.println("You cannot delete an item from an order that is not marked as pending ");
+					}
+					else {
+						isValidOrder = true;
+					}
+				}
+			}
+			catch(InputMismatchException e) {
+				System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
+				sc.nextLine();
+			}
+			
+		}while(!isValidOrder);
+		
+		return deleteOrder;
+	}
+
+	private static OrderItem getValidItem(Scanner sc, OrderItemDao orderItemDao, Order order) {
+		boolean isValidItem = false;
+		int deleteItemId = 0;
+		OrderItem deleteItem = null;
+		do {
+			try {
+				System.out.println("Enter item ID to delete: ");
+				deleteItemId = sc.nextInt();
+				sc.nextLine();
+					
+				if(deleteItemId <= 0) {
+					System.out.println("Id can only be positive (e.g., 1, 2, 10)");
+				}
+				else {
+					deleteItem = orderItemDao.findById(deleteItemId);
+					if(deleteItem == null) {
+						System.out.println("There is no item with that id");
+					}
+					else if(!(orderItemDao.findByOrderId(order.getId()).contains(deleteItem))) {
+						System.out.println("This item is not in the order");
+					}
+					else {
+						isValidItem = true;
+					}
+				}
+			}
+			catch(InputMismatchException e) {
+				System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
+				sc.nextLine();
+			}
+				
+		}while(!isValidItem);
+		
+		return deleteItem;
+	}
+
+	private static Product getValidProduct(Scanner sc, OrderItem item, ProductDao productDao) {
+		int updateProductId = 0;
+		Product updateProduct = null;
+		boolean isValidProduct = false;
+		do {
+			
+			System.out.println("Enter new product id (" + item.getProduct().getId() + ") - leave empty to keep current: ");
+			String inputProductId = sc.nextLine();
+			
+			if(inputProductId.trim().isEmpty()) {
+				updateProductId = item.getProduct().getId();
+				updateProduct = productDao.findById(updateProductId);
+				isValidProduct = true;
+				break;
+			}
+			
+			else {
+				try {
+					updateProductId = Integer.parseInt(inputProductId);
+					if(updateProductId <= 0) {
+						System.out.println("Id can only be positive (e.g., 1, 2, 10)");
+					}
+					else {
+						updateProduct = productDao.findById(updateProductId);
+						if(updateProduct == null) {
+							System.out.println("No product found with the specified ID");
+						}
+						else {
+							isValidProduct = true;
 						}
 						
 					}
-					if(isStatusListed) {
-						isValidStatus = true;
-					}
-					else {
-						System.out.println("Invalid status. Please choose from the following options: [pending, paid, shipped, delivered]");
-						isValidStatus = false;
-					}
-					
+				}
+				catch(NumberFormatException e) {
+					System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
+					sc.nextLine();
 					
 				}
-			} while(!isValidStatus);
-			
-			return newStatus;
+			}
+		} while(!isValidProduct);
+		
+		return updateProduct;
 	}
-	
 
-	private static String getValidOrderNumber(Scanner sc, OrderDao orderDao) {
-		String orderNumber;
-		boolean isValidOrderNumber = false;
+	private static int getValidQuantity(Scanner sc, OrderItem item) {
+		boolean isValidQuantity = false;
+		int quantity = 0;
+		String quantityString;
 		do {
-			
-			System.out.println("Enter order number(eg., ORD-2025-***): ");
-			orderNumber = sc.nextLine();
-			
-			if(!validateOrderNumber(orderNumber)) {
-				System.out.println("Invalid order number format. Try again");
-				isValidOrderNumber = false;
+			if(item == null) {
+				System.out.println("Please enter the quantity of items (e.g., 1, 2, 5): ");
 			}
 			else {
-				boolean orderNumberExists = false;
-				
-				List<Order> list = orderDao.findAll();
-				for(Order order : list) {
-					if(order.getOrderNumber().equals(orderNumber)) {
-						System.out.println("Order number already exists. Try again");
-						orderNumberExists = true;
-						break;
-					}
-				}
-				
-				if(!orderNumberExists) {
-					isValidOrderNumber = true;
-				}
-				
+				System.out.println("Enter new quantity (" + item.getQuantity() + ")  - leave empty to keep current: ");
 			}
 			
-		} while(!isValidOrderNumber);
+			quantityString = sc.nextLine();
+			System.out.println(quantityString);
+			
+			if(item != null && quantityString.trim().isEmpty()) {
+				quantity = item.getQuantity();
+				isValidQuantity = true;
+			}
+			else {
+				try {
+					quantity = Integer.parseInt(quantityString);
+					
+					if(quantity < 0) {
+						System.out.println("Invalid quantity! The value cannot be negative");
+					}
+					else {
+						isValidQuantity = true;
+					}
+				}
+				catch(NumberFormatException e) {
+					System.out.println("Invalid input! Please enter a whole number (e.g., 1, 5, 10).");
+					sc.nextLine();
+				}
+			}
+			
+			
+		} while(!isValidQuantity);
 		
-		return orderNumber;
-		
+		return quantity;
+
+
 	}
 
-	private static boolean validateOrderNumber(String orderNumber) {
-		String regexOrderNumber = "^ORD-2025-[A-Za-z0-9]{3}$";
-		Pattern pattern = Pattern.compile(regexOrderNumber);
-		Matcher matcher = pattern.matcher(orderNumber);
-		return matcher.matches();
-	}
-
-	public static void menuOrderItems() {
+	public static void menuOrderItems(Scanner sc) {
 		
 		OrderItemDao orderItemDao = DaoFactory.createOrderItemDao();
 		OrderDao orderDao = DaoFactory.createOrderDao();
 		ProductDao productDao = DaoFactory.createProductDao();
 		int choice;
-		List<Order> orderList = orderDao.findAll();
+		
 		
 		do {
-			System.out.println("\"===== ORDER ITEMS MENU =====\"");
+			System.out.println("=== ORDER ITEMS MENU ===");
 			
 			System.out.println("1. List items in an order");
 			System.out.println("2. Add item to an order");
@@ -945,16 +1177,17 @@ public class Program {
 			System.out.println("4. Delete item in an order");
 			System.out.println("5. Return to order menu");
 			
-			System.out.print("Choose an option: ");
-			choice = sc.nextInt();
+			choice = getValidChoice(sc, 1, 5);
 			sc.nextLine();
 			
 			switch(choice) {
 				
 				case 1:
 					System.out.println("=== LIST ITEMS IN AN ORDER ===");
-					System.out.println("Enter an order id: ");
-					int orderId = sc.nextInt();
+					for(Order o : orderDao.findAll()) {
+						System.out.println(o);
+					}
+					int orderId = getValidId(sc);
 					sc.nextLine();
 					Order order = orderDao.findById(orderId);
 					
@@ -962,12 +1195,16 @@ public class Program {
 						System.out.println("No order found with that id! ");
 					}
 					else {
+						System.out.println("Order details: ");
+						System.out.println(order);
+						
 						List<OrderItem> list = orderItemDao.findByOrderId(order.getId());
 						
 						if(list.isEmpty()) {
 							System.out.println("This order does not contain items");
 						}
 						else {
+							System.out.println("Itens details: ");
 							for(OrderItem item : list) {
 								System.out.println(item);
 							}
@@ -977,16 +1214,13 @@ public class Program {
 					
 				case 2:
 					System.out.println("=== ADD ITEM TO AN ORDER ===");
+					OrderItem orderItem = null;
 					
-					System.out.println("=== LIST PRODUCTS ===");
-					List<Product> productList = productDao.findAll();
-					
-					for(Product p : productList) {
+					for(Product p : productDao.findAll()) {
 						System.out.println(p);
 					}
 						
-					System.out.println("Enter an existing product id: ");
-					int addProductId = sc.nextInt();
+					int addProductId = getValidId(sc);
 					sc.nextLine();
 						
 					Product addProduct = productDao.findById(addProductId);
@@ -995,14 +1229,14 @@ public class Program {
 						System.out.println("No product found with that id!");
 					}
 					else {
-						System.out.println("=== LIST ORDERS ===");
+						System.out.println("Product details: ");
+						System.out.println(addProduct);
 						
-						for(Order o : orderList) {
+						for(Order o : orderDao.findAll()) {
 							System.out.println(o);
 						}
 						
-						System.out.println("Enter an existing order id:");
-						int addOrderId = sc.nextInt();
+						int addOrderId = getValidId(sc);
 						sc.nextLine();
 							
 						Order addOrder = orderDao.findById(addOrderId);
@@ -1011,27 +1245,23 @@ public class Program {
 							System.out.println("No order found with that id!");
 						}
 						else {
-							System.out.println("Enter quantity: ");
-							
-							if(!sc.hasNextInt()) {
-								System.out.println("Please enter a valid number (whole numbers only)");
+							if(!("pending".equals(addOrder.getStatus()))) {
+								System.out.println("Items can only be added to orders with 'pending' status");
 							}
 							else {
-								int quantity = sc.nextInt();
-								sc.nextLine();
+								System.out.println("Order details: ");
+								System.out.println(addOrder);
 								
-								if(quantity <= 0) {
-									System.out.println("Quantity must be greater than zero!");
-								}
-								else {
-									OrderItem orderItem = new OrderItem(null, addProduct, addOrder, quantity);
-									orderItemDao.insert(orderItem);
-									System.out.println("Inserted! New id = " + orderItem.getId());
-								}
+								int quantity = getValidQuantity(sc, orderItem);
+
+								orderItem = new OrderItem(null, addProduct, addOrder, quantity);
+								orderItemDao.insert(orderItem);
+								System.out.println("Inserted! New id = " + orderItem.getId());
 							}
-						}
 							
+						}
 					}
+					
 					break;
 					
 				case 3:
@@ -1039,197 +1269,78 @@ public class Program {
 					
 					System.out.println("=== LIST ORDERS ===");
 					
-					for(Order o : orderList) {
+					for(Order o : orderDao.findAll()) {
 						System.out.println(o);
 					}
 					
-					Order updateOrder = null;
-					int updateOrderId;
-					boolean validOrder = false;
-					do {
-						try {
-							System.out.println("Enter an existing order id:");
-							updateOrderId = sc.nextInt();
-							sc.nextLine();
+					int updateOrderId = getValidId(sc);
+					sc.nextLine();
+
+					Order updateOrder = orderDao.findById(updateOrderId);
+					
+					if(updateOrder == null) {
+						System.out.println("No order found with that id!");
+					}
+					else if(!(updateOrder.getStatus().equals("pending"))) {
+						System.out.println("It is not possible to update this order, it is not pending");
+									
+					}
+					else {
+						
+						List<OrderItem> list = orderItemDao.findByOrderId(updateOrder.getId());
+						
+						if(list.isEmpty()) {
+							System.out.println("This order does not contain items");
+						}
+						else {
+							System.out.println("ITEMS FROM " + updateOrder.getOrderNumber());
 							
-							if(updateOrderId <= 0) {
-								System.out.println("Id can only be positive! ");
+							for(OrderItem item : list) {
+								System.out.println(item);
+							}
+							
+							int updateItemId = getValidId(sc);
+							sc.nextLine();
+							OrderItem updateItem = orderItemDao.findById(updateItemId);
+							if(updateItem == null) {
+								System.out.println("There is no item with that id");
+							}
+							else if(!(list.contains(updateItem))) {
+								System.out.println("This item is not in the order");
 							}
 							else {
-								updateOrder = orderDao.findById(updateOrderId);
-								if(updateOrder == null) {
-									System.out.println("No order found with that id!");
-								}
-								else if(!updateOrder.getStatus().equals("pending")) {
-									System.out.println("It is not possible to update this order, it is not pending");
-									
-								}
-								else {
-									validOrder = true;
-								}
-							}
-						}
-						catch(InputMismatchException e) {
-							System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
-							sc.nextLine();
-						}
-						
-					}while(!validOrder);
-					
-					
-					
-					List<OrderItem> list = orderItemDao.findByOrderId(updateOrder.getId());
-						
-					if(list.isEmpty()) {
-						System.out.println("This order does not contain items");
-					}
-						
-					else {
-							
-						System.out.println("ITEMS FROM " + updateOrder.getOrderNumber());
-						for(OrderItem item : list) {
-							System.out.println(item);
-						}
-						
-						OrderItem updateItem = null;
-						int updateItemId;
-						boolean validItem = false;
-						do {
-							try {
-								System.out.println("Enter item ID to update: ");
-								updateItemId = sc.nextInt();
-								sc.nextLine();
-									
-								if(updateItemId <= 0) {
-									System.out.println("Id can only be positive");
-								}
-								else {
-									updateItem = orderItemDao.findById(updateItemId);
-									if(updateItem == null) {
-										System.out.println("There is no item with that id");
-									}
-									else if(!list.contains(updateItem)) {
-										System.out.println("This item is not in the order");
-									}
-									else {
-										validItem = true;
-									}
-								}
-							}
-							catch(InputMismatchException e) {
-								System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
-								sc.nextLine();
-							}
 								
-						}while(!validItem);
+								for(Product p : productDao.findAll()) {
+										System.out.println(p);
+								}
+								
+								Product updateProduct = getValidProduct(sc, updateItem, productDao);
+								
+								int updateQuantity = getValidQuantity(sc, updateItem);
+								
+								updateItem.setProduct(updateProduct);
+								updateItem.setQuantity(updateQuantity);
+								orderItemDao.update(updateItem);
+								System.out.println("Item updated successfully!");
 
-							
-							
-						System.out.println("=== LIST PRODUCTS ===");
-						List<Product> updateProductList = productDao.findAll();
-						for(Product p : updateProductList) {
-								System.out.println(p);
 							}
-								
-							int updateProductId;
-							Product updateProduct = new Product();
-							do {
-								
-								System.out.println("Enter new product id (" + updateItem.getProduct().getId() + "): ");
-								String inputProductId = sc.nextLine();
-								
-								if(inputProductId.trim().isEmpty()) {
-									updateProductId = updateItem.getProduct().getId();
-									updateProduct = productDao.findById(updateProductId);
-									break;
-								}
-								else {
-									try {
-										updateProductId = Integer.parseInt(inputProductId);
-										if(updateProductId <= 0) {
-											System.out.println("Id can only be positive");
-										}
-										else {
-											updateProduct = productDao.findById(updateProductId);
-											break;
-										}
-									}
-									catch(NumberFormatException e) {
-										System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
-									}
-								}
-							} while(true);
+						}
 							
-							int updateQuantity;
-							do {
-								
-								System.out.println("Enter new quantity (" + updateItem.getQuantity() + "): ");
-								String inputQuantity = sc.nextLine();
-								
-								if(inputQuantity.trim().isEmpty()) {
-									updateQuantity = updateItem.getQuantity();
-									break;
-								}
-								else {
-									try {
-										updateQuantity = Integer.parseInt(inputQuantity);
-										if(updateQuantity <= 0) {
-											System.out.println("Quantity can only be positive");
-										}
-										else {
-											break;
-										}
-									}
-									catch(NumberFormatException e) {
-										System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
-									}
-								}
-							} while(true);
-							
-							updateItem.setProduct(updateProduct);
-							updateItem.setQuantity(updateQuantity);
-							orderItemDao.update(updateItem);
-							System.out.println("Item updated successfully!");
-						
 					}
+					
 					break;
 				
 				
 				case 4:
 					
 					System.out.println("=== DELETE ITEM IN AN ORDER ===");
-					
-					System.out.println("=== LIST ORDERS ===");
 
-					for(Order o : orderList) {
+					for(Order o : orderDao.findAll()) {
 						System.out.println(o);
 					}
 					
-					Order deleteOrder = null;
-					int deleteOrderId;
-					
-					do {
-						try {
-							System.out.println("Enter an existing order id:");
-							deleteOrderId = sc.nextInt();
-							sc.nextLine();
-							
-							if(deleteOrderId <= 0) {
-								System.out.println("Id can only be positive! ");
-							}
-							else {
-								deleteOrder = orderDao.findById(deleteOrderId);
-								if(deleteOrder == null) {
-									System.out.println("No order found with that id!");
-								}
-							}
-						}
-						catch(InputMismatchException e) {
-							System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
-							sc.nextLine();
-						}
-						
-					}while(deleteOrder == null);
+				
+					Order deleteOrder = getValidOrder(sc, orderDao);
 					
 					List<OrderItem> itemsList = orderItemDao.findByOrderId(deleteOrder.getId());
 					
@@ -1244,37 +1355,7 @@ public class Program {
 							System.out.println(item);
 						}
 						
-						OrderItem deleteItem = null;
-						int deleteItemId;
-						boolean validItem = false;
-						do {
-							try {
-								System.out.println("Enter item ID to delete: ");
-								deleteItemId = sc.nextInt();
-								sc.nextLine();
-									
-								if(deleteItemId <= 0) {
-									System.out.println("Id can only be positive");
-								}
-								else {
-									deleteItem = orderItemDao.findById(deleteItemId);
-									if(deleteItem == null) {
-										System.out.println("There is no item with that id");
-									}
-									else if(!itemsList.contains(deleteItem)) {
-										System.out.println("This item is not in the order");
-									}
-									else {
-										validItem = true;
-									}
-								}
-							}
-							catch(InputMismatchException e) {
-								System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
-								sc.nextLine();
-							}
-								
-						}while(!validItem);
+						OrderItem deleteItem = getValidItem(sc, orderItemDao, deleteOrder);
 						
 						System.out.print("Are you sure you want to delete this item? (y/n): ");
 						String confirm = sc.nextLine();
@@ -1301,7 +1382,6 @@ public class Program {
 			}
 			
 	} while(choice != 5);
-		
 		
 		
 	}
