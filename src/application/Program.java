@@ -1,11 +1,8 @@
 package application;
 
-import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import model.dao.CustomerDao;
 import model.dao.DaoFactory;
@@ -16,62 +13,14 @@ import model.entities.Customer;
 import model.entities.Order;
 import model.entities.OrderItem;
 import model.entities.Product;
+import util.CustomerValidator;
+import util.OrderItemValidator;
+import util.OrderValidator;
+import util.ProductValidator;
+import util.ValidationUtils;
 
 public class Program {
 	
-	private static int getValidChoice(Scanner sc, int min, int max) {
-		int choice = 0;
-		boolean isValid = false;
-		do {
-			try {
-				System.out.print("Choose an option: ");
-				choice = sc.nextInt();
-				
-				
-				if(choice < min || choice > max) {
-					System.out.println("Please enter a number between " + min + " and " + max);
-				}
-				else {
-					isValid = true;
-				}
-				
-				
-			}
-			catch(InputMismatchException e) {
-				System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
-				sc.nextLine();
-			}
-		} while(!isValid);
-		
-		return choice;
-	}
-	
-	private static int getValidId(Scanner sc) {
-		int id = 0;
-		boolean isValid = false;
-		do {
-			try {
-				System.out.print("Enter a valid id: ");
-				id = sc.nextInt();
-				
-				
-				if(id <= 0) {
-					System.out.println("Please enter a positive number");
-				}
-				else {
-					isValid = true;
-				}
-				
-				
-			}
-			catch(InputMismatchException e) {
-				System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
-				sc.nextLine();
-			}
-		} while(!isValid);
-		
-		return id;
-	}
 	
 	public static void main(String[] args) {
 		
@@ -85,7 +34,7 @@ public class Program {
 				System.out.println("3. Manage Orders");
 				System.out.println("4. Exit");
 				
-				choice = getValidChoice(sc, 1, 4);
+				choice = ValidationUtils.getValidChoice(sc, 1, 4);
 					
 				switch(choice) {
 					case 1:
@@ -114,161 +63,7 @@ public class Program {
 
 	}
 	
-	private static boolean validateEmail(String email) {
-		 
-		return email.matches("^[A-Za-z0-9]+([._-][A-Za-z0-9]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$");
-	}
 	
-	private static boolean validateTelephone(String telephone) {
-		
-		return telephone.matches("^\\(?\\d{2}\\)?[\\s.-]?\\d{4,5}[\\s.-]?\\d{4}$");
-	}
-	
-	private static String getValidTelephone(Scanner sc, Customer customer) {
-
-		String telephone;
-		boolean isValidTelephone = false;
-		
-		do {
-			if(customer == null) {
-				System.out.println("Enter the phone(only numbers, 11 digits): ");
-			}
-			else {
-				System.out.println("Enter new phone (" + customer.getTelephone() + ") - leave empty to keep current: ");
-			}
-			telephone = sc.nextLine().trim();
-			
-			if(customer != null && telephone.isEmpty()) {
-				telephone = customer.getTelephone();
-				isValidTelephone = true;
-			}
-			else {
-				if(telephone.isEmpty()) {
-					System.out.println("Telephone name cannot be empty! Please enter a valid telephone");
-				}
-				else if(!validateTelephone(telephone)) {
-					System.out.println("Invalid telephone! Please try again");
-				}
-				else {
-					telephone = telephone.replaceAll("\\D", "");
-					isValidTelephone = true;
-				}
-				
-			}
-		} while(!isValidTelephone);
-		
-		return telephone;
-	}
-
-	private static String getValidEmail(Scanner sc, Customer customer, CustomerDao customerDao) {
-		
-		boolean isValidEmail = false;
-		String email;
-	
-		do {
-			boolean isDuplicate = false;
-			
-			if(customer == null) {
-				System.out.println("Enter a valid email (eg., matheus@example.com): ");
-			}
-			else {
-				System.out.println("Enter new email (" + customer.getEmail() + ") - leave empty to keep current: ");
-			}
-			email = sc.nextLine().trim();
-			
-			if(customer != null && email.isEmpty()) {
-				email = customer.getEmail();
-				isValidEmail = true;	
-			}
-			else {
-				if(email.isEmpty()) {
-					System.out.println("Email cannot be empty! Please enter a valid email");
-				}
-				else if(!validateEmail(email)) {
-					System.out.println("Invalid email format! Please try again");
-				}
-				else {
-					List<Customer> customerList = customerDao.findAll();
-					for(Customer obj : customerList) {
-						if(obj.getEmail().equals(email) && (customer == null || obj.getId() != customer.getId())) {
-							System.out.println("Email already registered!");
-							isDuplicate = true;
-							break;
-						}
-					}
-					if(!isDuplicate) {
-						isValidEmail = true;
-					}
-				}
-			}
-			
-		} while(!isValidEmail);
-		
-		return email;
-	}
-	
-	private static String getValidFirstName(Scanner sc, Customer customer) {
-		String firstName;
-		boolean isValidFirstName = false;
-		
-		do {
-			if(customer == null) {
-				System.out.println("Enter first name: ");
-			}
-			else {
-				System.out.println("Enter new first name (" + customer.getFirst_name() + ") - leave empty to keep current: ");
-			}
-			firstName = sc.nextLine().trim();
-			
-			if(customer != null && firstName.isEmpty()) {
-				firstName = customer.getFirst_name();
-				isValidFirstName = true;
-			}
-			else if(!validateName(firstName)) {
-				System.out.println("Invalid name! It should not contain numbers or special characters");
-			}
-			else {
-				isValidFirstName = true;
-			}
-			
-		} while(!isValidFirstName);
-		
-		return firstName;
-		
-	}
-	
-	private static String getValidLastName(Scanner sc, Customer customer) {
-		String lastName;
-		boolean isValidLastName = false;
-		
-		do {
-			if(customer == null) {
-				System.out.println("Enter last name: ");
-			}
-			else {
-				System.out.println("Enter new last name (" + customer.getLast_name() + ") - leave empty to keep current: ");
-			}
-			lastName = sc.nextLine().trim();
-			
-			if(customer != null && lastName.isEmpty()) {
-				lastName = customer.getLast_name();
-				isValidLastName = true;
-			}
-			else if(!validateName(lastName)) {
-				System.out.println("Invalid name! It should not contain numbers or special characters");
-			}
-			else {
-				isValidLastName = true;
-			}
-		} while(!isValidLastName);
-		
-		return lastName;
-	}
-
-	private static boolean validateName(String firstName) {
-		return firstName.matches("^[A-Za-zÀ-ÿ\\s]+$");
-	}
-
 	public static void menuCustomers(Scanner sc) {
 		
 		CustomerDao customerDao = DaoFactory.createCustomerDao();
@@ -283,7 +78,7 @@ public class Program {
 			System.out.println("5. Delete customer");
 			System.out.println("6. Return to main menu");
 			
-			choice = getValidChoice(sc, 1, 6);
+			choice = ValidationUtils.getValidChoice(sc, 1, 6);
 			sc.nextLine();
 			
 			switch(choice) {
@@ -307,7 +102,7 @@ public class Program {
 						System.out.println(customer);
 					}
 					
-					int id = getValidId(sc);
+					int id = ValidationUtils.getValidId(sc);
 					sc.nextLine();
 					Customer customer = customerDao.findById(id);
 					if(customer == null) {
@@ -322,10 +117,10 @@ public class Program {
 					Customer newCustomer = null;
 					System.out.println("=== ADD NEW CUSTOMER ===");
 					
-					String firstName = getValidFirstName(sc, newCustomer);
-					String lastName = getValidLastName(sc, newCustomer);
-					String email = getValidEmail(sc, newCustomer, customerDao);
-					String telephone = getValidTelephone(sc, newCustomer);
+					String firstName = CustomerValidator.getValidFirstName(sc, newCustomer);
+					String lastName = CustomerValidator.getValidLastName(sc, newCustomer);
+					String email = CustomerValidator.getValidEmail(sc, newCustomer, customerDao);
+					String telephone = CustomerValidator.getValidTelephone(sc, newCustomer);
 					
 					System.out.println("Enter address: ");
 					String address = sc.nextLine();
@@ -342,7 +137,7 @@ public class Program {
 						System.out.println(obj);
 					}
 					
-					int updateId = getValidId(sc);
+					int updateId = ValidationUtils.getValidId(sc);
 					sc.nextLine();
 					Customer updateCustomer = customerDao.findById(updateId);
 					
@@ -354,10 +149,10 @@ public class Program {
 						System.out.println("Customer details:");
 						System.out.println(updateCustomer);
 						
-						String newFirstName = getValidFirstName(sc, updateCustomer);
-						String newLastName = getValidLastName(sc, updateCustomer);
-						String newEmail = getValidEmail(sc, updateCustomer, customerDao);
-						String newTelephone = getValidTelephone(sc, updateCustomer);
+						String newFirstName = CustomerValidator.getValidFirstName(sc, updateCustomer);
+						String newLastName = CustomerValidator.getValidLastName(sc, updateCustomer);
+						String newEmail = CustomerValidator.getValidEmail(sc, updateCustomer, customerDao);
+						String newTelephone = CustomerValidator.getValidTelephone(sc, updateCustomer);
 
 						System.out.println("Enter new address (" + updateCustomer.getAddress() + "): ");
 						String newAddress = sc.nextLine();
@@ -384,7 +179,7 @@ public class Program {
 						System.out.println(obj);
 					}
 					
-					int deleteId = getValidId(sc);
+					int deleteId = ValidationUtils.getValidId(sc);
 					sc.nextLine();
 					
 					Customer deleteCustomer = customerDao.findById(deleteId);
@@ -422,200 +217,7 @@ public class Program {
 		
 	}
 	
-	private static String getValidName(Scanner sc, Product product, ProductDao productDao) {
-		
-		String name;
-		boolean isValidName = false;
-		do {
-			if(product == null) {
-				System.out.println("Enter product name:");
-			}
-			else {
-				System.out.println("Enter new product name (" + product.getName() + ") - leave empty to keep current:");
-			}
-			name = sc.nextLine().trim();
-			
-			if(product != null && name.isEmpty()) {
-				name = product.getName();
-				isValidName = true;
-			}
-			else {
-				if(name.isEmpty()) {
-					System.out.println("Product name cannot be empty! Please enter a name");
-					isValidName = false;
-				}
-				else {
-					isValidName = true;
-					List<Product> list = productDao.findAll();
-					for(Product p : list) {
-						if(p.getName().equalsIgnoreCase(name) && (product == null || product.getId() != p.getId())) {
-							System.out.println("A product with that name already exists. Do you want to register it anyway?(y/n):");
-							String confirm = sc.nextLine();
-							
-							if(confirm.equalsIgnoreCase("y")) {
-								isValidName = true;
-								break;
-							}
-							else {
-								if(product == null) {
-									System.out.println("Registration cancelled for this name. Please enter a different name");
-								}
-								else {
-									System.out.println("Update cancelled for this name. Please enter a different name");
-								}
-								isValidName = false;
-								break;
-							}
-						}
-					}
-				}
-
-				
-			}
-		} while(!isValidName);
-		
-		return name;
-	}
-	private static int getValidStock(Scanner sc, Product product) {
-		int stock = 0;
-		String stockString;
-		boolean isValidStock = false;
-		
-		do {
-			if(product == null) {
-				System.out.println("Enter the quantity in stock (e.g., 10 or 0): ");
-			}
-			else {
-				System.out.println("Enter new quantity in stock (" + product.getInventory() + ") - leave empty to keep current: ");
-			}
-			
-			stockString = sc.nextLine().trim();
-			
-			if(product != null && stockString.isEmpty()) {
-				stock = product.getInventory();
-				isValidStock = true;
-			}
-			else {
-				if(stockString.isEmpty()) {
-					System.out.println("Stock cannot be empty! Please enter a stock quantity");
-					isValidStock = false;
-				}
-				
-				else {
-					try {
-						stock = Integer.parseInt(stockString);
-						
-						if(stock < 0) {
-							System.out.println("Invalid stock quantity! Stock cannot be a negative number");
-							isValidStock = false;
-						}
-						else {
-							isValidStock = true;
-						}
-					}
-					catch(NumberFormatException e) {
-						System.out.println("Invalid input. Please enter a whole number (e.g., 10, 15)");
-						isValidStock = false;
-					}
-				}
-			}
-			
-			
-		} while(!isValidStock);
-		
-		return stock;
-	}
-
-	private static double getValidPrice(Scanner sc, Product product) {
-		
-		double price = 0.0;
-		String priceString;
-		boolean isValidPrice = false;
-		do {
-			if(product == null) {
-				System.out.println("Enter product price (e.g., 10.50): ");
-			}
-			else {
-				System.out.println("Enter new price (" + product.getPrice() + ") - leave empty to keep current: ");
-			}
-			
-			priceString = sc.nextLine().trim();
-			
-			if(product != null && priceString.isEmpty()) {
-				price = product.getPrice();
-				isValidPrice = true;
-			}
-			else {
-				
-				if(priceString.isEmpty()) {
-					System.out.println("Price cannot be empty! Please enter a price");
-					isValidPrice = false;
-				}
-				
-				else {
-					try {
-						price = Double.parseDouble(priceString);
-						if(price <= 0.0) {
-							System.out.println("Invalid price! The price must be a positive number");
-							isValidPrice = false;
-						}
-						else {
-							isValidPrice = true;
-						}
-						
-					}
-					catch(NumberFormatException e) {
-						  System.out.println("Invalid input! Please enter a numeric value for the price (e.g., 10.50 or 25)");
-						  isValidPrice = false;
-					}
-				}
-			}
-			
-		} while(!isValidPrice);
-		
-		return price;
-	}
-
-	private static String getValidCategory(Scanner sc, Product product) {
-		boolean isValidCategory = false;
-		String category;
-		do {
-			
-			if(product == null) {
-				System.out.println("Enter category (e.g., bicycle, accessories, bicycle components):  ");
-			}
-			else {
-				System.out.println("Enter new category (" + product.getCategory() + ") - leave empty to keep current: ");
-			}
-			category = sc.nextLine().trim();
-			
-			if(product != null && category.isEmpty()) {
-				category = product.getCategory();
-				isValidCategory = true;
-			}
-			
-			else {
-				if(category.isEmpty()) {
-					System.out.println("Category cannot be empty! Please enter a category");
-					isValidCategory = false;
-				}
-				
-				else if(!(category.equalsIgnoreCase("bicycle") || category.equalsIgnoreCase("accessories") || category.equalsIgnoreCase("bicycle components"))) {
-					System.out.println("Invalid category! Please choose from: bicycle, accessories or bicycle components");
-					isValidCategory = false;			
-				}
-				else {
-					category = category.toLowerCase();
-					isValidCategory = true;
-				}
-			}
-			
-			
-		} while(!isValidCategory);
-		
-		return category;
-		
-	}
+	
 
 	public static void menuProducts(Scanner sc) {
 		
@@ -632,7 +234,7 @@ public class Program {
 			System.out.println("5. Delete product");
 			System.out.println("6. Return to main menu");
 			
-			choice = getValidChoice(sc, 1, 6);
+			choice = ValidationUtils.getValidChoice(sc, 1, 6);
 			sc.nextLine();
 			
 			switch(choice) {
@@ -655,7 +257,7 @@ public class Program {
 					for(Product p : productDao.findAll()) {
 						System.out.println(p);
 					}
-					int id = getValidId(sc);
+					int id = ValidationUtils.getValidId(sc);
 					sc.nextLine();
 					Product product = productDao.findById(id);
 					if(product == null) {
@@ -672,12 +274,12 @@ public class Program {
 					
 					Product newProduct = null;
 					
-					String name = getValidName(sc, newProduct, productDao);
+					String name = ProductValidator.getValidName(sc, newProduct, productDao);
 					System.out.println("Enter description: ");
 					String description = sc.nextLine();
-					String category = getValidCategory(sc, newProduct);
-					double price = getValidPrice(sc, newProduct);
-					int stock = getValidStock(sc, newProduct);
+					String category = ProductValidator.getValidCategory(sc, newProduct);
+					double price = ProductValidator.getValidPrice(sc, newProduct);
+					int stock = ProductValidator.getValidStock(sc, newProduct);
 					
 					
 					newProduct = new Product(null, name, description, category, price, stock);
@@ -692,7 +294,7 @@ public class Program {
 						System.out.println(p);
 					}
 					
-					int updateId = getValidId(sc);
+					int updateId = ValidationUtils.getValidId(sc);
 					sc.nextLine();
 					
 					Product updateProduct = productDao.findById(updateId);
@@ -703,7 +305,7 @@ public class Program {
 						System.out.println("Product details:");
 						System.out.println(updateProduct);
 						
-						String newName = getValidName(sc, updateProduct, productDao);
+						String newName = ProductValidator.getValidName(sc, updateProduct, productDao);
 						
 						System.out.println("Enter new description (" + updateProduct.getDescription() + "): ");
 						String newDescription = sc.nextLine();
@@ -712,9 +314,9 @@ public class Program {
 							newDescription = updateProduct.getDescription();
 						}
 						
-						String newCategory = getValidCategory(sc, updateProduct);
-						double newPrice = getValidPrice(sc, updateProduct);
-						int newStock = getValidStock(sc, updateProduct);
+						String newCategory = ProductValidator.getValidCategory(sc, updateProduct);
+						double newPrice = ProductValidator.getValidPrice(sc, updateProduct);
+						int newStock = ProductValidator.getValidStock(sc, updateProduct);
 						
 						updateProduct.setName(newName);
 						updateProduct.setDescription(newDescription);
@@ -733,7 +335,7 @@ public class Program {
 					for(Product p : productDao.findAll()) {
 						System.out.println(p);
 					}
-					int deleteId = getValidId(sc);
+					int deleteId = ValidationUtils.getValidId(sc);
 					sc.nextLine();
 					Product deleteProduct = productDao.findById(deleteId);
 					if(deleteProduct == null) {
@@ -768,90 +370,7 @@ public class Program {
 		} while(choice != 6);
 	}
 	
-	private static String getValidStatus(Scanner sc, Order order) {
-		boolean isValidStatus = false;
-		String newStatus;
-		String[] validStatuses = {"pending", "paid", "shipped", "delivered"};
-		do {
-			System.out.println("Enter new status(e.g., pending, paid, shipped, delivered) : (" + order.getStatus() + ") - leave empty to keep current: ");
-			newStatus = sc.nextLine().trim().toLowerCase();
-			
-			if(newStatus.isEmpty()) {
-				newStatus = order.getStatus();
-				isValidStatus = true;
-			}
-			else if(newStatus.equals(order.getStatus())) {
-				System.out.println("The order is already in the " + newStatus + " status. Please enter a different status if you wish to update it");
-				isValidStatus = false;
-			}
-			else {
-				boolean isStatusListed = false;
-				for(String status : validStatuses) {
-					if(status.equalsIgnoreCase(newStatus)) {
-						isStatusListed = true;
-						break;
-					}
-					
-				}
-				if(isStatusListed) {
-					isValidStatus = true;
-				}
-				else {
-					System.out.println("Invalid status. Please choose from the following options: [pending, paid, shipped, delivered]");
-					isValidStatus = false;
-				}
-				
-				
-			}
-		} while(!isValidStatus);
-		
-		return newStatus;
-	}
-
-
-	private static String getValidOrderNumber(Scanner sc, OrderDao orderDao) {
-		String orderNumber;
-		boolean isValidOrderNumber = false;
-		do {
-			
-			System.out.println("Enter order number(eg., ORD-2025-***): ");
-			orderNumber = sc.nextLine().trim();
-			
-			if(!validateOrderNumber(orderNumber)) {
-				System.out.println("Invalid order number format. Try again");
-				isValidOrderNumber = false;
-			}
-			else {
-				boolean orderNumberExists = false;
-				
-				List<Order> list = orderDao.findAll();
-				for(Order order : list) {
-					if(order.getOrderNumber().equals(orderNumber)) {
-						System.out.println("Order number already exists. Try again");
-						orderNumberExists = true;
-						break;
-					}
-				}
-				
-				if(!orderNumberExists) {
-					isValidOrderNumber = true;
-				}
-				
-			}
-			
-		} while(!isValidOrderNumber);
-		
-		return orderNumber;
-		
-	}
 	
-	private static boolean validateOrderNumber(String orderNumber) {
-		String regexOrderNumber = "^ORD-2025-[A-Za-z0-9]{3}$";
-		Pattern pattern = Pattern.compile(regexOrderNumber);
-		Matcher matcher = pattern.matcher(orderNumber);
-		return matcher.matches();
-	}
-
 	public static void menuOrders(Scanner sc) {
 		
 		OrderDao orderDao = DaoFactory.createOrderDao();
@@ -869,7 +388,7 @@ public class Program {
 				System.out.println("7. Manage Order Items");
 				System.out.println("8. Return to main menu");
 				
-				choice = getValidChoice(sc, 1, 8);
+				choice = ValidationUtils.getValidChoice(sc, 1, 8);
 				sc.nextLine();
 				
 				switch(choice) {
@@ -892,7 +411,7 @@ public class Program {
 						for(Order o : orderDao.findAll()) {
 							System.out.println(o);
 						}
-						int id = getValidId(sc);
+						int id = ValidationUtils.getValidId(sc);
 						sc.nextLine();
 						
 						Order order = orderDao.findById(id);
@@ -910,7 +429,7 @@ public class Program {
 						for(Customer c : customerDao.findAll()) {
 							System.out.println(c);
 						}
-						int customerId = getValidId(sc);
+						int customerId = ValidationUtils.getValidId(sc);
 						sc.nextLine();
 						
 						List<Order> orderList = orderDao.findByCustomerId(customerId);
@@ -931,11 +450,11 @@ public class Program {
 						for(Order o : orderDao.findAll()) {
 							System.out.println(o);
 						}
-						String orderNumber = getValidOrderNumber(sc, orderDao);
+						String orderNumber = OrderValidator.getValidOrderNumber(sc, orderDao);
 						for(Customer c : customerDao.findAll()) {
 							System.out.println(c);
 						}
-						int orderCustomerId = getValidId(sc);
+						int orderCustomerId = ValidationUtils.getValidId(sc);
 						Customer customer = customerDao.findById(orderCustomerId);
 							
 						if(customer == null) {
@@ -955,7 +474,7 @@ public class Program {
 						for(Order o : orderDao.findAll()) {
 							System.out.println(o);
 						}
-						int updateOrderId = getValidId(sc);
+						int updateOrderId = ValidationUtils.getValidId(sc);
 						sc.nextLine();
 						Order updateOrder = orderDao.findById(updateOrderId);
 						
@@ -967,7 +486,7 @@ public class Program {
 							System.out.println("Order details:");
 							System.out.println(updateOrder);
 							
-							String newStatus = getValidStatus(sc, updateOrder);
+							String newStatus = OrderValidator.getValidStatus(sc, updateOrder);
 							
 							if(updateOrder.getTotalAmount() == 0 && newStatus != "canceled") {
 								System.out.println("The order total is $0. The status can only be updated to 'canceled' ");
@@ -985,7 +504,7 @@ public class Program {
 						for(Order o : orderDao.findAll()) {
 							System.out.println(o);
 						}
-						int cancelOrderId = getValidId(sc);
+						int cancelOrderId = ValidationUtils.getValidId(sc);
 						sc.nextLine();
 						
 						Order cancelOrder = orderDao.findById(cancelOrderId);
@@ -1039,178 +558,7 @@ public class Program {
 
 	}
 	
-	private static Order getValidOrder(Scanner sc, OrderDao orderDao) {
-		Order order = null;
-		int orderId = 0;
-		boolean isValidOrder = false;
-		
-		do {
-			try {
-				System.out.println("Enter an existing order id: ");
-				orderId = sc.nextInt();
-				sc.nextLine();
-				
-				if(orderId <= 0) {
-					System.out.println("Id can only be positive! ");
-				}
-				else {
-					order = orderDao.findById(orderId);
-					if(order == null) {
-						System.out.println("No order found with that id!");
-					}
-					else if(!(order.getStatus().equals("pending"))){
-						System.out.println("This operation is only allowed for pending orders! ");
-					}
-					else {
-						isValidOrder = true;
-					}
-				}
-			}
-			catch(InputMismatchException e) {
-				System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
-				sc.nextLine();
-			}
-			
-		}while(!isValidOrder);
-		
-		return order;
-	}
-
-	private static OrderItem getValidItem(Scanner sc, OrderItemDao orderItemDao, Order order) {
-		boolean isValidItem = false;
-		int itemId = 0;
-		OrderItem item = null;
-		do {
-			try {
-				System.out.println("Enter item ID: ");
-				itemId = sc.nextInt();
-				sc.nextLine();
-					
-				if(itemId <= 0) {
-					System.out.println("Id can only be positive (e.g., 1, 2, 10)");
-				}
-				else {
-					item = orderItemDao.findById(itemId);
-					if(item == null) {
-						System.out.println("There is no item with that id");
-					}
-					else if(!(orderItemDao.findByOrderId(order.getId()).contains(item))) {
-						System.out.println("This item is not in the order");
-					}
-					else {
-						isValidItem = true;
-					}
-				}
-			}
-			catch(InputMismatchException e) {
-				System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
-				sc.nextLine();
-			}
-				
-		}while(!isValidItem);
-		
-		return item;
-	}
-
-	private static Product getValidProduct(Scanner sc, OrderItem item, ProductDao productDao) {
-		int productId = 0;
-		Product product = null;
-		boolean isValidProduct = false;
-		do {
-			
-			if(item == null) {
-				System.out.println("Enter a valid id: ");
-			}
-			else {
-				System.out.println("Enter new product id (" + item.getProduct().getId() + ") - leave empty to keep current: ");
-			}
-			String inputProductId = sc.nextLine().trim();
-			
-			if(item != null && inputProductId.isEmpty()) {
-				productId = item.getProduct().getId();
-				product = productDao.findById(productId);
-				isValidProduct = true;
-				break;
-			}
-			else if(item == null && inputProductId.isEmpty()) {
-				System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
-			}
-			else {
-				try {
-					productId = Integer.parseInt(inputProductId);
-					if(productId <= 0) {
-						System.out.println("Id can only be positive (e.g., 1, 2, 10)");
-					}
-					else {
-						product = productDao.findById(productId);
-						if(product == null) {
-							System.out.println("No product found with the specified ID");
-						}
-						else if(product.getInventory() == 0) {
-							System.out.println("Product unavailable. This item is currently out of stock");
-						}
-						else {
-							isValidProduct = true;
-						}
-						
-					}
-				}
-				catch(NumberFormatException e) {
-					System.out.println("Please enter a whole number only (e.g., 1, 2, 10)");
-					
-				}
-			}
-		} while(!isValidProduct);
-		
-		return product;
-	}
-
-	private static int getValidQuantity(Scanner sc, OrderItem item, Product product) {
-		boolean isValidQuantity = false;
-		int quantity = 0;
-		String quantityString;
-		do {
-			if(item == null) {
-				System.out.println("Please enter the quantity of items (e.g., 1, 2, 5): ");
-			}
-			else {
-				System.out.println("Enter new quantity (" + item.getQuantity() + ")  - leave empty to keep current: ");
-			}
-			
-			quantityString = sc.nextLine();
-			System.out.println(quantityString);
-			
-			if(item != null && quantityString.trim().isEmpty()) {
-				quantity = item.getQuantity();
-				isValidQuantity = true;
-			}
-			else {
-				try {
-					quantity = Integer.parseInt(quantityString);
-					
-					if(quantity < 0) {
-						System.out.println("Invalid quantity! The value cannot be negative");
-					}
-					else if(quantity > product.getInventory()) {
-						System.out.println("Invalid quantity! Only " + product.getInventory() + " units available in stock");
-					}
-					else {
-						isValidQuantity = true;
-					}
-				}
-				catch(NumberFormatException e) {
-					System.out.println("Invalid input! Please enter a whole number (e.g., 1, 5, 10)");
-				}
-			}
-			
-			
-		} while(!isValidQuantity);
-		
-		return quantity;
-
-
-	}
-
+	
 	public static void menuOrderItems(Scanner sc) {
 		
 		OrderItemDao orderItemDao = DaoFactory.createOrderItemDao();
@@ -1228,7 +576,7 @@ public class Program {
 			System.out.println("4. Delete item in an order");
 			System.out.println("5. Return to order menu");
 			
-			choice = getValidChoice(sc, 1, 5);
+			choice = ValidationUtils.getValidChoice(sc, 1, 5);
 			sc.nextLine();
 			
 			switch(choice) {
@@ -1238,7 +586,7 @@ public class Program {
 					for(Order o : orderDao.findAll()) {
 						System.out.println(o);
 					}
-					int orderId = getValidId(sc);
+					int orderId = ValidationUtils.getValidId(sc);
 					sc.nextLine();
 					Order order = orderDao.findById(orderId);
 					
@@ -1271,7 +619,7 @@ public class Program {
 						System.out.println(p);
 					}
 							
-					Product addProduct = getValidProduct(sc, orderItem, productDao);
+					Product addProduct = OrderItemValidator.getValidProduct(sc, orderItem, productDao);
 					
 					System.out.println("Product details: ");
 					System.out.println(addProduct);
@@ -1281,12 +629,12 @@ public class Program {
 					}
 					
 					
-					Order addOrder = getValidOrder(sc, orderDao);
+					Order addOrder = OrderItemValidator.getValidOrder(sc, orderDao);
 					
 					System.out.println("Order details: ");
 					System.out.println(addOrder);
 					
-					int quantity = getValidQuantity(sc, orderItem, addProduct);
+					int quantity = OrderItemValidator.getValidQuantity(sc, orderItem, addProduct);
 	
 					orderItem = new OrderItem(null, addProduct, addOrder, quantity);
 					orderItemDao.insert(orderItem);
@@ -1301,7 +649,7 @@ public class Program {
 						System.out.println(o);
 					}
 					
-					Order updateOrder = getValidOrder(sc, orderDao);
+					Order updateOrder = OrderItemValidator.getValidOrder(sc, orderDao);
 
 						
 					List<OrderItem> list = orderItemDao.findByOrderId(updateOrder.getId());
@@ -1315,15 +663,15 @@ public class Program {
 						for(OrderItem item : list) {
 							System.out.println(item);
 						}
-						OrderItem updateItem = getValidItem(sc, orderItemDao, updateOrder);
+						OrderItem updateItem = OrderItemValidator.getValidItem(sc, orderItemDao, updateOrder);
 						
 						for(Product p : productDao.findAll()) {
 								System.out.println(p);
 						}
 
-						Product updateProduct = getValidProduct(sc, updateItem, productDao);
+						Product updateProduct = OrderItemValidator.getValidProduct(sc, updateItem, productDao);
 						
-						int updateQuantity = getValidQuantity(sc, updateItem, updateProduct);
+						int updateQuantity = OrderItemValidator.getValidQuantity(sc, updateItem, updateProduct);
 						
 						updateItem.setProduct(updateProduct);
 						updateItem.setQuantity(updateQuantity);
@@ -1331,9 +679,7 @@ public class Program {
 						System.out.println("Item updated successfully!");
 
 						
-					}
-							
-					
+					}	
 					
 					break;
 				
@@ -1347,7 +693,7 @@ public class Program {
 					}
 					
 				
-					Order deleteOrder = getValidOrder(sc, orderDao);
+					Order deleteOrder = OrderItemValidator.getValidOrder(sc, orderDao);
 					
 					List<OrderItem> itemsList = orderItemDao.findByOrderId(deleteOrder.getId());
 					
@@ -1362,7 +708,7 @@ public class Program {
 							System.out.println(item);
 						}
 						
-						OrderItem deleteItem = getValidItem(sc, orderItemDao, deleteOrder);
+						OrderItem deleteItem = OrderItemValidator.getValidItem(sc, orderItemDao, deleteOrder);
 						
 						System.out.print("Are you sure you want to delete this item? (y/n): ");
 						String confirm = sc.nextLine();
