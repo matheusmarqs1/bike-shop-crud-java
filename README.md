@@ -38,8 +38,11 @@ The main goal of this project was to practice database access in Java, applying 
 ```plaintext
 src/
 ├── db/               // Database connection and exceptions
-├── entities/         // Entity classes: Client, Product, Order, OrderItem
-├── dao/              // DAO interfaces and implementations
+├── model/
+│   ├── entities/     // Entity classes: Client, Product, Order, OrderItem
+│   ├── dao/          // DAO interfaces and implementations
+│   └── validators/   // Entity-specific and generic validation classes
+├── util/             // Utility classes: ValidationUtils, AppUtils
 └── application/      // Demo class with main() for testing the CRUD operations
 ```
 ---
@@ -65,9 +68,59 @@ The database contains the following tables:
 
 ---
 
-## 🚀 How to Run (when completed)
+## 🏁 How to Set Up and Run
 
-Instructions on how to set up the database, configure the connection, and run the project will be added here soon.
+### 1. Prerequisites
+
+- Java 17 or higher installed ([download](https://adoptium.net/))
+- MySQL server running ([download](https://dev.mysql.com/downloads/installer/))
+- MySQL Connector/J (JDBC driver) ([download .jar](https://dev.mysql.com/downloads/connector/j/))
+- Recommended IDE: Eclipse, IntelliJ, or VS Code
+
+### 2. Database Setup
+
+- Create a database named `bike`
+- Import the SQL script found in the `/sql` folder to create tables:
+  ```sh
+  mysql -u root -p < sql/schema.sql
+  ```
+- Make sure to note the user and password you will use
+
+### 3. Project Setup
+
+- Clone this repository:
+  ```sh
+  git clone https://github.com/matheusmarqs1/bike-shop-crud-java.git
+  ```
+- Import the project into your IDE
+- Add the MySQL Connector/J `.jar` to your project's build path
+
+### 4. Configure Database Connection
+
+- Update your database credentials in `db.properties` (or in the code if applicable):
+  ```
+  db.url=jdbc:mysql://localhost:3306/bike_shop
+  db.user=root
+  db.password=yourpassword
+  ```
+
+### 5. Running the Application
+
+- Compile the code (if using CMD):
+  ```sh
+  javac -d bin src/application/Program.java
+  ```
+- Run the main class:
+  ```sh
+  java -cp bin;path/to/mysql-connector.jar application.Program
+  ```
+  _On Windows, use `;` to separate paths. On Linux/Mac use `:`._
+
+- Or simply run from your IDE (right-click `Program.java` → Run)
+
+---
+
+*If you have any issues or need help running the project, feel free to open an issue or contact me!*
 
 ---
 
@@ -77,9 +130,10 @@ Instructions on how to set up the database, configure the connection, and run th
 - [x] SQL scripts for table creation
 - [x] Initial project structure (Java packages and classes)
 - [x] DAO interfaces created
-- [ ] DAO implementations
-- [ ] CRUD methods for each entity
-- [ ] Main application for testing
+- [x] Utility classes for validation and common operations
+- [x] DAO implementations
+- [x] CRUD methods for each entity
+- [x] Main application for testing
 
 ---
 
