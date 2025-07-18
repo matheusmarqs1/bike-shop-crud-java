@@ -1,4 +1,4 @@
-package util;
+package model.validators;
 
 import java.util.List;
 import java.util.Scanner;
@@ -62,10 +62,10 @@ public static String getValidName(Scanner sc, Product product, ProductDao produc
 		
 		return name;
 	}
-	public static int getValidStock(Scanner sc, Product product) {
-		int stock = 0;
-		String stockString;
-		boolean isValidStock = false;
+	public static int getValidInventory(Scanner sc, Product product) {
+		int inventory = 0;
+		String inventoryString;
+		boolean isValidInventory = false;
 		
 		do {
 			if(product == null) {
@@ -75,41 +75,41 @@ public static String getValidName(Scanner sc, Product product, ProductDao produc
 				System.out.println("Enter new quantity in stock (" + product.getInventory() + ") - leave empty to keep current: ");
 			}
 			
-			stockString = sc.nextLine().trim();
+			inventoryString = sc.nextLine().trim();
 			
-			if(product != null && stockString.isEmpty()) {
-				stock = product.getInventory();
-				isValidStock = true;
+			if(product != null && inventoryString.isEmpty()) {
+				inventory = product.getInventory();
+				isValidInventory = true;
 			}
 			else {
-				if(stockString.isEmpty()) {
+				if(inventoryString.isEmpty()) {
 					System.out.println("Stock cannot be empty! Please enter a stock quantity");
-					isValidStock = false;
+					isValidInventory = false;
 				}
 				
 				else {
 					try {
-						stock = Integer.parseInt(stockString);
+						inventory = Integer.parseInt(inventoryString);
 						
-						if(stock < 0) {
+						if(inventory < 0) {
 							System.out.println("Invalid stock quantity! Stock cannot be a negative number");
-							isValidStock = false;
+							isValidInventory = false;
 						}
 						else {
-							isValidStock = true;
+							isValidInventory = true;
 						}
 					}
 					catch(NumberFormatException e) {
 						System.out.println("Invalid input. Please enter a whole number (e.g., 10, 15)");
-						isValidStock = false;
+						isValidInventory = false;
 					}
 				}
 			}
 			
 			
-		} while(!isValidStock);
+		} while(!isValidInventory);
 		
-		return stock;
+		return inventory;
 	}
 
 	public static double getValidPrice(Scanner sc, Product product) {

@@ -1,4 +1,4 @@
-package util;
+package model.validators;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -11,7 +11,6 @@ import model.entities.OrderItem;
 import model.entities.Product;
 
 public class OrderItemValidator {
-	
 	public static Order getValidOrder(Scanner sc, OrderDao orderDao) {
 		Order order = null;
 		int orderId = 0;
@@ -165,7 +164,7 @@ public class OrderItemValidator {
 						System.out.println("Invalid quantity! The value cannot be negative");
 					}
 					else if(quantity > product.getInventory()) {
-						System.out.println("Invalid quantity! Only " + product.getInventory() + " units available in stock");
+						System.out.println("Invalid quantity! Only " + product.getInventory() + " units available in inventory");
 					}
 					else {
 						isValidQuantity = true;

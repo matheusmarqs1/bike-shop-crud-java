@@ -13,10 +13,11 @@ import model.entities.Customer;
 import model.entities.Order;
 import model.entities.OrderItem;
 import model.entities.Product;
-import util.CustomerValidator;
-import util.OrderItemValidator;
-import util.OrderValidator;
-import util.ProductValidator;
+import model.validators.CustomerValidator;
+import model.validators.OrderItemValidator;
+import model.validators.OrderValidator;
+import model.validators.ProductValidator;
+import util.AppUtils;
 import util.ValidationUtils;
 
 public class Program {
@@ -83,34 +84,11 @@ public class Program {
 			
 			switch(choice) {
 				case 1:
-					System.out.println("=== CUSTOMER LIST ===");
-					List<Customer> list = customerDao.findAll();
-					if(list.isEmpty()) {
-						System.out.println("No customers registered!");
-					}
-					else {
-						for(Customer customer : list) {
-							System.out.println(customer);
-						}
-					}
+					AppUtils.listAll(customerDao.findAll(), "customer");
 					break;
 					
 				case 2:
-					System.out.println("=== VIEW CUSTOMER DETAILS ===");
-					
-					for(Customer customer : customerDao.findAll()){
-						System.out.println(customer);
-					}
-					
-					int id = ValidationUtils.getValidId(sc);
-					sc.nextLine();
-					Customer customer = customerDao.findById(id);
-					if(customer == null) {
-						System.out.println("No customer found with that id!");
-					}
-					else {
-						System.out.println(customer);
-					}
+					AppUtils.searchByIdAndDisplay(sc,  customerDao.findAll(), customerDao::findById, "customer");
 					break;
 				
 				case 3:
@@ -154,7 +132,7 @@ public class Program {
 						String newEmail = CustomerValidator.getValidEmail(sc, updateCustomer, customerDao);
 						String newTelephone = CustomerValidator.getValidTelephone(sc, updateCustomer);
 
-						System.out.println("Enter new address (" + updateCustomer.getAddress() + "): ");
+						System.out.println("Enter new address (" + updateCustomer.getAddress() + ") - leave empty to keep current: ");
 						String newAddress = sc.nextLine();
 						
 						if(newAddress.trim().isEmpty()) {
@@ -174,34 +152,7 @@ public class Program {
 					break;
 					
 				case 5:
-					System.out.println("=== DELETE CUSTOMER ===");
-					for(Customer obj : customerDao.findAll()) {
-						System.out.println(obj);
-					}
-					
-					int deleteId = ValidationUtils.getValidId(sc);
-					sc.nextLine();
-					
-					Customer deleteCustomer = customerDao.findById(deleteId);
-					if(deleteCustomer == null) {
-						System.out.println("No customer found with that id! ");
-					}
-					else {
-						System.out.println("Customer details:");
-						System.out.println(deleteCustomer);
-						System.out.print("Are you sure you want to delete this customer? (y/n): ");
-						String confirm = sc.nextLine();
-						
-						if(confirm.equalsIgnoreCase("y")) {
-							customerDao.deleteById(deleteCustomer.getId());
-							System.out.println("Customer deleted successfully!");
-						}
-						else {
-							System.out.println("Deletion aborted!");
-						}
-						
-					}
-					
+					AppUtils.deleteEntityById(sc, customerDao.findAll(), customerDao::findById, customerDao::deleteById, "customer");
 					break;
 					
 				case 6:
@@ -240,33 +191,11 @@ public class Program {
 			switch(choice) {
 				
 				case 1:
-					List<Product> list = productDao.findAll();
-					System.out.println("=== PRODUCT LIST ===");
-					if(list.isEmpty()) {
-						System.out.println("No products registered!");
-					}
-					else {
-						for(Product product : list) {
-							System.out.println(product);
-						}
-					}
+					AppUtils.listAll(productDao.findAll(), "product");
 					break;
 				
 				case 2:
-					System.out.println("=== VIEW PRODUCT DETAILS ===");
-					for(Product p : productDao.findAll()) {
-						System.out.println(p);
-					}
-					int id = ValidationUtils.getValidId(sc);
-					sc.nextLine();
-					Product product = productDao.findById(id);
-					if(product == null) {
-						System.out.println("No product found with that id!");
-					}
-					else {
-						System.out.println(product);
-					}
-					
+					AppUtils.searchByIdAndDisplay(sc, productDao.findAll(), productDao::findById, "product");
 					break;
 				
 				case 3:
@@ -279,10 +208,10 @@ public class Program {
 					String description = sc.nextLine();
 					String category = ProductValidator.getValidCategory(sc, newProduct);
 					double price = ProductValidator.getValidPrice(sc, newProduct);
-					int stock = ProductValidator.getValidStock(sc, newProduct);
+					int inventory = ProductValidator.getValidInventory(sc, newProduct);
 					
 					
-					newProduct = new Product(null, name, description, category, price, stock);
+					newProduct = new Product(null, name, description, category, price, inventory);
 					productDao.insert(newProduct);
 					System.out.println("Inserted! New id = " + newProduct.getId());
 					break;
@@ -307,7 +236,7 @@ public class Program {
 						
 						String newName = ProductValidator.getValidName(sc, updateProduct, productDao);
 						
-						System.out.println("Enter new description (" + updateProduct.getDescription() + "): ");
+						System.out.println("Enter new description (" + updateProduct.getDescription() + ") - leave empty to keep current:  ");
 						String newDescription = sc.nextLine();
 						
 						if(newDescription.trim().isEmpty()) {
@@ -316,13 +245,13 @@ public class Program {
 						
 						String newCategory = ProductValidator.getValidCategory(sc, updateProduct);
 						double newPrice = ProductValidator.getValidPrice(sc, updateProduct);
-						int newStock = ProductValidator.getValidStock(sc, updateProduct);
+						int newInventory = ProductValidator.getValidInventory(sc, updateProduct);
 						
 						updateProduct.setName(newName);
 						updateProduct.setDescription(newDescription);
 						updateProduct.setCategory(newCategory);
 						updateProduct.setPrice(newPrice);
-						updateProduct.setInventory(newStock);
+						updateProduct.setInventory(newInventory);
 						
 						productDao.update(updateProduct);
 						System.out.println("Product updated successfully!");
@@ -330,32 +259,7 @@ public class Program {
 					break;
 					
 				case 5:
-					System.out.println("=== DELETE PRODUCT ===");
-					
-					for(Product p : productDao.findAll()) {
-						System.out.println(p);
-					}
-					int deleteId = ValidationUtils.getValidId(sc);
-					sc.nextLine();
-					Product deleteProduct = productDao.findById(deleteId);
-					if(deleteProduct == null) {
-						System.out.println("No product found with that id! ");
-					}
-					else {
-						System.out.println("Product details:");
-						System.out.println(deleteProduct);
-						System.out.print("Are you sure you want to delete this product? (y/n): ");
-						String confirm = sc.nextLine();
-						
-						if(confirm.equalsIgnoreCase("y")) {
-							productDao.deleteById(deleteProduct.getId());
-							System.out.println("Product deleted successfully!");
-						}
-						else {
-							System.out.println("Deletion aborted!");
-						}
-					}
-				
+					AppUtils.deleteEntityById(sc, productDao.findAll(), productDao::findById, productDao::deleteById, "product");
 					break;
 					
 				case 6:
@@ -394,34 +298,11 @@ public class Program {
 				switch(choice) {
 					
 					case 1:
-						System.out.println("=== LIST ORDERS ===");
-						List<Order> list = orderDao.findAll();
-						if(list.isEmpty()) {
-							System.out.println("No orders registered!");
-						}
-						else {
-							for(Order order : list) {
-								System.out.println(order);
-							}
-						}
+						AppUtils.listAll(orderDao.findAll(), "order");
 						break;
 						
 					case 2:
-						System.out.println("=== VIEW ORDER DETAILS ===");
-						for(Order o : orderDao.findAll()) {
-							System.out.println(o);
-						}
-						int id = ValidationUtils.getValidId(sc);
-						sc.nextLine();
-						
-						Order order = orderDao.findById(id);
-						if(order == null) {
-							System.out.println("No order found with that id!");
-						}
-						else {
-							System.out.println(order);
-						}
-						
+						AppUtils.searchByIdAndDisplay(sc, orderDao.findAll(), orderDao::findById, "order");
 						break;
 						
 					case 3:
@@ -488,7 +369,7 @@ public class Program {
 							
 							String newStatus = OrderValidator.getValidStatus(sc, updateOrder);
 							
-							if(updateOrder.getTotalAmount() == 0 && newStatus != "canceled") {
+							if(updateOrder.getTotalAmount() == 0 && !(newStatus.equals("canceled"))) {
 								System.out.println("The order total is $0. The status can only be updated to 'canceled' ");
 								break;
 							}
