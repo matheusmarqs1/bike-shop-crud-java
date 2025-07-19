@@ -119,10 +119,10 @@ public static String getValidName(Scanner sc, Product product, ProductDao produc
 		boolean isValidPrice = false;
 		do {
 			if(product == null) {
-				System.out.println("Enter product price (e.g., 10.50): ");
+				System.out.println("Enter product price (e.g., $ 10.50): ");
 			}
 			else {
-				System.out.println("Enter new price (" + product.getPrice() + ") - leave empty to keep current: ");
+				System.out.println("Enter new price ($ " + product.getPrice() + ") - leave empty to keep current: ");
 			}
 			
 			priceString = sc.nextLine().trim();
