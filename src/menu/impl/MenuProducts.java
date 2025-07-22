@@ -1,126 +1,238 @@
 package menu.impl;
 
+import java.util.List;
 import java.util.Scanner;
 
+import exception.BusinessException;
+import exception.NoDataFoundException;
 import menu.Menu;
-import model.dao.DaoFactory;
-import model.dao.ProductDao;
 import model.entities.Product;
-import model.validators.ProductValidator;
+import service.ProductService;
+import service.ServiceFactory;
 import util.AppUtils;
 import util.ValidationUtils;
 
 public class MenuProducts implements Menu {
-
+	
+	private final Scanner sc = new Scanner(System.in);
+	private final ProductService productService = ServiceFactory.createProductService();
+	private static final int MIN_OPTION = 1;
+	private static final int MAX_OPTION = 6;
+	private static final int EXIT_OPTION = 6;
+	
 	@Override
-	public void displayMenu(Scanner sc) {
-		
-		ProductDao productDao = DaoFactory.createProductDao();
+	public void displayMenu() {
 		int choice;
-		
 		do {
-			
-			System.out.println("=== PRODUCT MENU ===");
-			System.out.println("1. List all products");
-			System.out.println("2. View product details");
-			System.out.println("3. Add new product");
-			System.out.println("4. Update product");
-			System.out.println("5. Delete product");
-			System.out.println("6. Return to main menu");
-			
-			choice = ValidationUtils.getValidChoice(sc, 1, 6);
+			showMenuOptions();
+			choice = ValidationUtils.getValidChoice(sc, MIN_OPTION, MAX_OPTION);
 			sc.nextLine();
+			handleChoice(choice);
+		} while(choice != EXIT_OPTION);
+	}
 			
+	public void handleChoice(int choice) {
+		try {
 			switch(choice) {
-				
-				case 1:
-					AppUtils.listAll(productDao.findAll(), "product");
-					break;
-				
-				case 2:
-					AppUtils.searchByIdAndDisplay(sc, productDao.findAll(), productDao::findById, "product");
-					break;
-				
-				case 3:
-					System.out.println("=== ADD NEW PRODUCT ===");
-					
-					Product newProduct = null;
-					
-					String name = ProductValidator.getValidName(sc, newProduct, productDao);
-					System.out.println("Enter description: ");
-					String description = sc.nextLine();
-					String category = ProductValidator.getValidCategory(sc, newProduct);
-					double price = ProductValidator.getValidPrice(sc, newProduct);
-					int inventory = ProductValidator.getValidInventory(sc, newProduct);
-					
-					
-					newProduct = new Product(null, name, description, category, price, inventory);
-					productDao.insert(newProduct);
-					System.out.println("Inserted! New id = " + newProduct.getId());
-					break;
-					
-				case 4:
-					System.out.println("=== UPDATE PRODUCT ===");
-					
-					for(Product p : productDao.findAll()) {
-						System.out.println(p);
-					}
-					
-					int updateId = ValidationUtils.getValidId(sc);
-					sc.nextLine();
-					
-					Product updateProduct = productDao.findById(updateId);
-					if(updateProduct == null) {
-						System.out.println("No product found with that id!");
-					}
-					else {
-						System.out.println("Product details:");
-						System.out.println(updateProduct);
-						
-						String newName = ProductValidator.getValidName(sc, updateProduct, productDao);
-						
-						System.out.println("Enter new description (" + updateProduct.getDescription() + ") - leave empty to keep current:  ");
-						String newDescription = sc.nextLine();
-						
-						if(newDescription.trim().isEmpty()) {
-							newDescription = updateProduct.getDescription();
-						}
-						
-						String newCategory = ProductValidator.getValidCategory(sc, updateProduct);
-						double newPrice = ProductValidator.getValidPrice(sc, updateProduct);
-						int newInventory = ProductValidator.getValidInventory(sc, updateProduct);
-						
-						updateProduct.setName(newName);
-						updateProduct.setDescription(newDescription);
-						updateProduct.setCategory(newCategory);
-						updateProduct.setPrice(newPrice);
-						updateProduct.setInventory(newInventory);
-						
-						productDao.update(updateProduct);
-						System.out.println("Product updated successfully!");
-					}
-					break;
-					
-				case 5:
-					AppUtils.deleteEntityById(sc, productDao.findAll(), productDao::findById, productDao::deleteById, "product");
-					break;
-					
-				case 6:
-					System.out.println("Returning to main menu...");
-					return;
-					
-				default:
-					System.out.println("Invalid option!");
-					break;
+			
+				case 1 -> listProducts();
+				case 2 -> viewProduct();
+				case 3 -> insertProduct();
+				case 4 -> updateProduct();
+				case 5 -> deleteProduct();
+				case 6 -> System.out.println("Returning to main menu...");
+				default -> System.out.println("Invalid option! Try again");
 			}
+		} catch(Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	private void deleteProduct() {
+		boolean exitLoop = false;
+		do {
+			try {
+				System.out.println("\n=== DELETE PRODUCT ===\n");
+				System.out.println("Below is a list of all registered products.\nSelect the product ID you wish to delete:\n");
+				listProducts();
+				System.out.println();
+		        int id = ValidationUtils.getValidId(sc);
+		        sc.nextLine();
+		        
+		        Product product = productService.findById(id);
 
-		} while(choice != 6);
+		        System.out.println("\nProduct details: \n");
+		        System.out.println(product);
+
+		        if (AppUtils.confirmAction(sc, "delete this product")) {
+		            productService.deleteById(id);
+		            System.out.println("Product deleted successfully!");
+		            exitLoop = true;
+		        } else {
+		            System.out.println("Deletion cancelled!");
+		            exitLoop = true;
+		        }
+			} catch(IllegalArgumentException e) {
+				System.out.println("Error: " + e.getMessage());
+				exitLoop = !AppUtils.confirmAction(sc, "try again?");
+			}
+			catch(NoDataFoundException e) {
+				System.out.println("Error: " + e.getMessage());
+				exitLoop = !AppUtils.confirmAction(sc, "try again with a different ID? ");
+			}
+			catch(Exception e) {
+				System.out.println("An unexpected error: " + e.getMessage());
+				e.printStackTrace();
+				exitLoop = !AppUtils.confirmAction(sc, "try again? (might be a persistent issue)");
+			}
+		} while(!exitLoop);
+	}
+	private void updateProduct() {
+		boolean exitLoop = false;
+		do {
+			try {
+				System.out.println("\n=== UPDATE PRODUCT ===\n");
+				System.out.println("Below is a list of all registered products.\nSelect the ID of the product you want to update:\n");
+				listProducts();
+				System.out.println();
+				int updateId = ValidationUtils.getValidId(sc);
+				sc.nextLine();
+				
+				Product updateProduct = productService.findById(updateId);
+				
+				System.out.println("\nProduct details:\n");
+				System.out.println(updateProduct);
+				
+				String newName = ValidationUtils.getValidProductName(sc, "Enter new product name (" + updateProduct.getName() + ") - leave empty to keep current:  ", true);
+				if(newName.isEmpty()) newName = updateProduct.getName();
+				
+				String newDescription = ValidationUtils.getValidProductDescription(sc, "Enter new product description (" + updateProduct.getDescription() + ") - leave empty to keep current:  ", true);
+				if(newDescription.isEmpty()) newDescription = updateProduct.getDescription();
+				
+				String newCategory = ValidationUtils.getValidProductCategory(sc, "Enter new product category (" + updateProduct.getCategory() + ") - leave empty to keep current:  ", true);
+				if(newCategory.isEmpty()) newCategory = updateProduct.getCategory();
+				
+				Double newPrice = ValidationUtils.getValidProductPrice(sc, "Enter new product price ( U$ " + updateProduct.getPrice() + ") - leave empty to keep current:  ", true);
+				double finalPrice = (newPrice == null) ? updateProduct.getPrice() : newPrice.doubleValue();
+				
+				Integer newInventory = ValidationUtils.getValidProductInventory(sc, "Enter new product inventory ( " + updateProduct.getInventory() + ") - leave empty to keep current:  " , true);
+				int finalInventory = (newInventory == null) ? updateProduct.getInventory() : newInventory.intValue();
+				
+				updateProduct.setName(newName);
+				updateProduct.setDescription(newDescription);
+				updateProduct.setCategory(newCategory);
+				updateProduct.setPrice(finalPrice);
+				updateProduct.setInventory(finalInventory);
+				
+				productService.update(updateProduct);
+				
+				System.out.println("Product updated successfully!");
+				exitLoop = true;
+			} catch(IllegalArgumentException e) {
+				System.out.println("Error: " + e.getMessage());
+				exitLoop = !AppUtils.confirmAction(sc, "try again? ");
+			}
+			catch(BusinessException e) {
+				System.out.println("Error: " + e.getMessage());
+				exitLoop = !AppUtils.confirmAction(sc, "try again with a different product name? ");
+			}
+			catch(NoDataFoundException e) {
+				System.out.println("Error: " + e.getMessage());
+				exitLoop = !AppUtils.confirmAction(sc, "try again with a different ID? ");
+			}
+			catch(Exception e) {
+				System.out.println("An unexpected error: " + e.getMessage());
+				e.printStackTrace();
+				exitLoop = !AppUtils.confirmAction(sc, "try again? (might be a persistent issue)");
+			}
+		} while(!exitLoop);
+}
+	private void insertProduct() {
+		boolean exitLoop = false;
+		do {
+			try {
+				System.out.println("\n=== ADD NEW PRODUCT ===\n");
+				
+				Product newProduct = null;
+				
+				System.out.println("\nProduct name (must be unique)");
+				String name = ValidationUtils.getValidProductName(sc, "Enter the product name: ", false);
+				
+				System.out.println("\nNow enter a brief description of the product");
+				String description = ValidationUtils.getValidProductDescription(sc, "Enter product description: ", false);
+				
+				System.out.println("\nProduct category (bicycle, bicycle components, accessories)");
+				String category = ValidationUtils.getValidProductCategory(sc, "Enter product category: ", false);
+				
+				System.out.println("Product price (positive value)");
+				double price = ValidationUtils.getValidProductPrice(sc, "Enter the price of the product: ", false);
+				
+				System.out.println("\nProduct inventory quantity (must be a non-negative integer)");
+				int inventory = ValidationUtils.getValidProductInventory(sc, "Enter the quantity in inventory of the product: ", false);
+				
+				newProduct = new Product(null, name, description, category, price, inventory);
+				productService.insert(newProduct);
+				System.out.println("Inserted! New id = " + newProduct.getId());
+				
+				exitLoop = true;
+				
+			} catch(IllegalArgumentException e) {
+				System.out.println("Error: " + e.getMessage());
+				exitLoop = !AppUtils.confirmAction(sc, "try again? ");
+			}
+			catch(BusinessException e) {
+				System.out.println("Error: " + e.getMessage());
+				exitLoop = !AppUtils.confirmAction(sc, "try again with a different product name? ");
+			}
+			catch(Exception e) {
+				System.out.println("An unexpected error occurred: " + e.getMessage());
+				e.printStackTrace();
+				exitLoop = !AppUtils.confirmAction(sc, "try again? (might be a persistent issue)");
+			}
+		} while(!exitLoop);
+	}
+	private void viewProduct() {
+		boolean exitLoop = false;
+		do {
+			try {
+				System.out.println("\n=== VIEW PRODUCT ===\n");
+				System.out.println("Below is a list of all registered products.\nEnter the ID of the product you want to view:\n");
+				listProducts();
+				System.out.println();
+				int id = ValidationUtils.getValidId(sc);
+				sc.nextLine();
+				Product product = productService.findById(id);
+				exitLoop = true;
+				System.out.println(product);
+				
+			} catch(IllegalArgumentException e) {
+				System.out.println("Error: " + e.getMessage());
+				exitLoop = !AppUtils.confirmAction(sc, "try again? ");
+			}
+			catch(NoDataFoundException e) {
+				System.out.println("Error: " + e.getMessage());
+				exitLoop = !AppUtils.confirmAction(sc, "try again with a different ID? ");
+			}
+		} while(!exitLoop);
+	}
+	private void listProducts() {
+		System.out.println("\n=== PRODUCT LIST ===\n");
+		System.out.println("Displaying all available products in the system:\n");
+		List<Product> list = productService.findAll();
+        if (list.isEmpty()) {
+            System.out.println("No products have been registered yet!");
+        } else {
+            AppUtils.listAll(list);
+        }
+	}
+	public void showMenuOptions() {
+		System.out.println("\n=== PRODUCT MENU ===\n");
+		System.out.println("1. List all products");
+		System.out.println("2. View product details");
+		System.out.println("3. Add new product");
+		System.out.println("4. Update product");
+		System.out.println("5. Delete product");
+		System.out.println("6. Return to main menu");
+		
 	}
 }
 	
-	
-	
-		
-				
-
-

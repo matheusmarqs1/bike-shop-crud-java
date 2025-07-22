@@ -1,8 +1,8 @@
 package menu;
 
-import java.util.Scanner;
-
 public interface Menu {
 	
-	void displayMenu(Scanner sc);
+	void displayMenu();
+	void handleChoice(int choice);
+	void showMenuOptions();
 }
