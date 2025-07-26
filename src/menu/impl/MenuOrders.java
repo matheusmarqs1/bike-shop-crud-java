@@ -6,6 +6,7 @@ import java.util.Scanner;
 import exception.BusinessException;
 import exception.NoDataFoundException;
 import menu.Menu;
+import menu.validators.MenuOrderValidator;
 import model.entities.Customer;
 import model.entities.Order;
 import service.CustomerService;
@@ -115,7 +116,7 @@ public class MenuOrders implements Menu {
 				System.out.println("\n=== Order details ===\n");
 				System.out.println(order);
 				
-				String newStatus = ValidationUtils.getValidStatus(sc, "Enter new status (Options: pending, paid, shipped, delivered, canceled): ");
+				String newStatus = MenuOrderValidator.getValidStatus(sc, "Enter new status (Options: pending, paid, shipped, delivered, canceled): ");
 				
 				order.setStatus(newStatus);
 				orderService.update(order);
@@ -151,7 +152,7 @@ public class MenuOrders implements Menu {
 				showAllOrders();
 				System.out.println();
 				
-				String orderNumber = ValidationUtils.getValidOrderNumber(sc, "Enter order number (e.g., ORD-2025-NNN, where NNN are 3 digits): ");
+				String orderNumber = MenuOrderValidator.getValidOrderNumber(sc, "Enter order number (e.g., ORD-2025-NNN, where NNN are 3 digits): ");
 				
 				List<Customer> customers = customerService.findAll();
 				

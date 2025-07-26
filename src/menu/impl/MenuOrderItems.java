@@ -6,6 +6,7 @@ import java.util.Scanner;
 import exception.BusinessException;
 import exception.NoDataFoundException;
 import menu.Menu;
+import menu.validators.MenuOrderItemValidator;
 import model.entities.Order;
 import model.entities.OrderItem;
 import model.entities.Product;
@@ -182,7 +183,7 @@ public class MenuOrderItems implements Menu {
 				boolean confirmUpdateQuantity = AppUtils.confirmAction(sc, "update the quantity?");
 				if(confirmUpdateQuantity) {
 					System.out.println("Current quantity: " + orderItem.getQuantity());
-					quantity = ValidationUtils.getValidQuantity(sc, "Enter the new quantity for this item: ");
+					quantity = MenuOrderItemValidator.getValidQuantity(sc, "Enter the new quantity for this item: ");
 				}
 				
 				orderItem.setProduct(product);
@@ -251,7 +252,7 @@ public class MenuOrderItems implements Menu {
 				System.out.println("\nOrder details:\n");
 				System.out.println(order);
 				
-				int quantity = ValidationUtils.getValidQuantity(sc, "Please enter the quantity of items (e.g., 1, 2, 5): ");
+				int quantity = MenuOrderItemValidator.getValidQuantity(sc, "Please enter the quantity of items (e.g., 1, 2, 5): ");
 				
 				OrderItem orderItem = new OrderItem(null, product, order, quantity);
 				orderItemService.insert(orderItem);

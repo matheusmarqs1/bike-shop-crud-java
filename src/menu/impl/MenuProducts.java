@@ -6,6 +6,7 @@ import java.util.Scanner;
 import exception.BusinessException;
 import exception.NoDataFoundException;
 import menu.Menu;
+import menu.validators.MenuProductValidator;
 import model.entities.Product;
 import service.ProductService;
 import service.ServiceFactory;
@@ -102,19 +103,19 @@ public class MenuProducts implements Menu {
 				System.out.println("\nProduct details:\n");
 				System.out.println(updateProduct);
 				
-				String newName = ValidationUtils.getValidProductName(sc, "Enter new product name (" + updateProduct.getName() + ") - leave empty to keep current:  ", true);
+				String newName = MenuProductValidator.getValidProductName(sc, "Enter new product name (" + updateProduct.getName() + ") - leave empty to keep current:  ", true);
 				if(newName.isEmpty()) newName = updateProduct.getName();
 				
-				String newDescription = ValidationUtils.getValidProductDescription(sc, "Enter new product description (" + updateProduct.getDescription() + ") - leave empty to keep current:  ", true);
+				String newDescription = MenuProductValidator.getValidProductDescription(sc, "Enter new product description (" + updateProduct.getDescription() + ") - leave empty to keep current:  ", true);
 				if(newDescription.isEmpty()) newDescription = updateProduct.getDescription();
 				
-				String newCategory = ValidationUtils.getValidProductCategory(sc, "Enter new product category (" + updateProduct.getCategory() + ") - leave empty to keep current:  ", true);
+				String newCategory = MenuProductValidator.getValidProductCategory(sc, "Enter new product category (" + updateProduct.getCategory() + ") - leave empty to keep current:  ", true);
 				if(newCategory.isEmpty()) newCategory = updateProduct.getCategory();
 				
-				Double newPrice = ValidationUtils.getValidProductPrice(sc, "Enter new product price ( U$ " + updateProduct.getPrice() + ") - leave empty to keep current:  ", true);
+				Double newPrice = MenuProductValidator.getValidProductPrice(sc, "Enter new product price ( U$ " + updateProduct.getPrice() + ") - leave empty to keep current:  ", true);
 				double finalPrice = (newPrice == null) ? updateProduct.getPrice() : newPrice.doubleValue();
 				
-				Integer newInventory = ValidationUtils.getValidProductInventory(sc, "Enter new product inventory ( " + updateProduct.getInventory() + ") - leave empty to keep current:  " , true);
+				Integer newInventory = MenuProductValidator.getValidProductInventory(sc, "Enter new product inventory ( " + updateProduct.getInventory() + ") - leave empty to keep current:  " , true);
 				int finalInventory = (newInventory == null) ? updateProduct.getInventory() : newInventory.intValue();
 				
 				updateProduct.setName(newName);
@@ -155,19 +156,19 @@ public class MenuProducts implements Menu {
 				Product newProduct = null;
 				
 				System.out.println("\nProduct name (must be unique)");
-				String name = ValidationUtils.getValidProductName(sc, "Enter the product name: ", false);
+				String name = MenuProductValidator.getValidProductName(sc, "Enter the product name: ", false);
 				
 				System.out.println("\nNow enter a brief description of the product");
-				String description = ValidationUtils.getValidProductDescription(sc, "Enter product description: ", false);
+				String description = MenuProductValidator.getValidProductDescription(sc, "Enter product description: ", false);
 				
 				System.out.println("\nProduct category (bicycle, bicycle components, accessories)");
-				String category = ValidationUtils.getValidProductCategory(sc, "Enter product category: ", false);
+				String category = MenuProductValidator.getValidProductCategory(sc, "Enter product category: ", false);
 				
 				System.out.println("Product price (positive value)");
-				double price = ValidationUtils.getValidProductPrice(sc, "Enter the price of the product: ", false);
+				double price = MenuProductValidator.getValidProductPrice(sc, "Enter the price of the product: ", false);
 				
 				System.out.println("\nProduct inventory quantity (must be a non-negative integer)");
-				int inventory = ValidationUtils.getValidProductInventory(sc, "Enter the quantity in inventory of the product: ", false);
+				int inventory = MenuProductValidator.getValidProductInventory(sc, "Enter the quantity in inventory of the product: ", false);
 				
 				newProduct = new Product(null, name, description, category, price, inventory);
 				productService.insert(newProduct);

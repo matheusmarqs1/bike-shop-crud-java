@@ -6,6 +6,7 @@ import java.util.Scanner;
 import exception.BusinessException;
 import exception.NoDataFoundException;
 import menu.Menu;
+import menu.validators.MenuCustomerValidator;
 import model.entities.Customer;
 import service.CustomerService;
 import service.ServiceFactory;
@@ -108,20 +109,20 @@ public class MenuCustomers implements Menu {
 				
 				System.out.println("\nYou can enter new values or leave the field empty to keep the current one");
 				
-				String newFirstName = ValidationUtils.getValidFirstOrLastName(sc, "Enter new first name (" + currentCustomer.getFirst_name() + ") - leave empty to keep current: ", true);
+				String newFirstName = MenuCustomerValidator.getValidFirstOrLastName(sc, "Enter new first name (" + currentCustomer.getFirst_name() + ") - leave empty to keep current: ", true);
 				if (newFirstName.isEmpty()) newFirstName = currentCustomer.getFirst_name();
 				
-				String newLastName = ValidationUtils.getValidFirstOrLastName(sc, "Enter new last name (" + currentCustomer.getLast_name() + ") - leave empty to keep current: ", true);
+				String newLastName = MenuCustomerValidator.getValidFirstOrLastName(sc, "Enter new last name (" + currentCustomer.getLast_name() + ") - leave empty to keep current: ", true);
 				if (newLastName.isEmpty()) newLastName = currentCustomer.getLast_name();
 				
-				String newEmail = ValidationUtils.getValidEmail(sc, "Enter new email (" + currentCustomer.getEmail() + ") - leave empty to keep current: ", true);
+				String newEmail = MenuCustomerValidator.getValidEmail(sc, "Enter new email (" + currentCustomer.getEmail() + ") - leave empty to keep current: ", true);
 				if (newEmail.isEmpty()) newEmail = currentCustomer.getEmail();
 				
-				String newTelephone = ValidationUtils.getValidTelephone(sc, "Enter new telephone (" + currentCustomer.getTelephone() + ") - leave empty to keep current: ", true);
+				String newTelephone = MenuCustomerValidator.getValidTelephone(sc, "Enter new telephone (" + currentCustomer.getTelephone() + ") - leave empty to keep current: ", true);
 				if (newTelephone.isEmpty()) newTelephone = currentCustomer.getTelephone();
 
 				
-				String newAddress = ValidationUtils.getValidAddress(sc, "Enter new address (" + currentCustomer.getAddress() + ") - leave empty to keep current: ", true);
+				String newAddress = MenuCustomerValidator.getValidAddress(sc, "Enter new address (" + currentCustomer.getAddress() + ") - leave empty to keep current: ", true);
 				if (newAddress.isEmpty()) newAddress = currentCustomer.getAddress();
 				
 				Customer updatedCustomer = new Customer(updatedId, newFirstName, newLastName, newEmail, newTelephone, newAddress);
@@ -159,19 +160,19 @@ public class MenuCustomers implements Menu {
 				Customer newCustomer = null;
 				
 				System.out.println("First name (only letters)");
-				String firstName = ValidationUtils.getValidFirstOrLastName(sc, "Enter first name: ", false);
+				String firstName = MenuCustomerValidator.getValidFirstOrLastName(sc, "Enter first name: ", false);
 				
 				System.out.println("Last name (only letters)");
-				String lastName = ValidationUtils.getValidFirstOrLastName(sc, "Enter last name: ", false);
+				String lastName = MenuCustomerValidator.getValidFirstOrLastName(sc, "Enter last name: ", false);
 				
 				System.out.println("Email address (must be valid and unique, e.g., matheus@example.com)");
-				String email = ValidationUtils.getValidEmail(sc, "Enter a valid email: ", false);
+				String email = MenuCustomerValidator.getValidEmail(sc, "Enter a valid email: ", false);
 				
 				System.out.println("Telephone number (only digits, exactly 11 numbers including area code)");
-				String telephone = ValidationUtils.getValidTelephone(sc, "Enter the phone: ", false);
+				String telephone = MenuCustomerValidator.getValidTelephone(sc, "Enter the phone: ", false);
 				
 				System.out.println("Full address (e.g., Street name, number, city)");
-				String address = ValidationUtils.getValidAddress(sc, "Enter address: ", false);
+				String address = MenuCustomerValidator.getValidAddress(sc, "Enter address: ", false);
 				
 				newCustomer = new Customer(null, firstName, lastName, email, telephone, address);
 				customerService.insert(newCustomer);
