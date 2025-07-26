@@ -37,13 +37,18 @@ The main goal of this project was to practice database access in Java, applying 
 
 ```plaintext
 src/
-├── db/               // Database connection and exceptions
+├── application/       // Entry point: main class (Program.java)
+├── db/                // Database connection and low-level exceptions
+├── exception/         // Custom domain and business exceptions
+├── menu/              // User interaction menus and menu-specific validations
 ├── model/
-│   ├── entities/     // Entity classes: Client, Product, Order, OrderItem
-│   ├── dao/          // DAO interfaces and implementations
-│   └── validators/   // Entity-specific and generic validation classes
-├── util/             // Utility classes: ValidationUtils, AppUtils
-└── application/      // Demo class with main() for testing the CRUD operations
+│   ├── dao/           // DAO interfaces and their implementations
+│   ├── entities/      // Domain entities: Client, Product, Order, etc.
+├── service/           // Business logic layer: interfaces and implementations
+├── util/              // Utility classes:
+│   ├── ValidationUtils.java   // Generic validations (IDs, menu options)
+│   └── AppUtils.java          // Common reusable helper methods
+└── sql/               // SQL scripts for database creation
 ```
 ---
 
